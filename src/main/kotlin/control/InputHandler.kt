@@ -1,0 +1,4 @@
+package control
+
+interface InputHandler {
+}
