@@ -7,10 +7,11 @@ import control.PPCApplication
 
 // todo: stroke doesn't get completed when page is left
 // todo: fix zero-width or zero-height boundingBox
+// todo: selector actions like delete have no effect if mouse leaves page and therefor resets selectedPage
 
 // todo: reduce memory
 // todo: proposed solutions:
-// todo: stroke has an global offset for the starting point afterwards only the difference between the points can be stored by using smaller datatypes like bytes
+// todo: stroke has an global offset for the starting point afterwards only the between the points can be stored by using smaller datatypes like bytes
 fun main() = application {
       PPCApplication(rememberApplicationState())
 //    val a = 1.0

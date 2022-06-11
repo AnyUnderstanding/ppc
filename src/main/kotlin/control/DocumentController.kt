@@ -18,8 +18,13 @@ class DocumentController : Controller {
 //    private var List<List<Point>>
 
 
+    fun toolDraggedEnded(){
+        when (state.document.value.selectedTool.value) {
+            Tool.Pen -> if (selectedPage != null) newStroke()
 
-    fun toolMoved(point: Point) {
+        }
+    }
+    fun toolDragged(point: Point) {
 
         val globalPoint = localCoordsToGlobal(point)
 
@@ -56,7 +61,7 @@ class DocumentController : Controller {
             selection.value?.end?.value = globalPoint
 
             selection.value!!.selectedStrokes.clear()
-            selection.value!!.selectedStrokes.addAll(
+            selection.value!!.addStroke(
                 selectedPage!!.strokes.filter { BoundingBox(selection.value!!.start, selection.value!!.end.value!!) in it.mainBoundingBox }
             )
         }
@@ -182,6 +187,7 @@ class DocumentController : Controller {
 
     fun deleteSelection() {
         selection.value?.selectedStrokes?.let { selectedPage?.strokes?.removeAll(it) }
+        selection.value = null
     }
 
     fun moveSelection(){
@@ -191,6 +197,8 @@ class DocumentController : Controller {
             it.move(Point(30.0,30.0))
         }
     }
+
+
 
 
 }

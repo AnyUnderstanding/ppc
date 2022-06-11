@@ -11,7 +11,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
 
     fun mousePressed(mousePos: Offset) {
         pressed = true
-        documentController.toolMoved(Point(mousePos.x.toDouble(), mousePos.y.toDouble()))
+        documentController.toolDragged(Point(mousePos.x.toDouble(), mousePos.y.toDouble()))
     }
 
 
@@ -33,7 +33,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         this.mousePos = Point(mousePos.x.toDouble(), mousePos.y.toDouble())
         mouseDraged = false
         if (pressed) {
-            documentController.toolMoved(Point(mousePos.x.toDouble(), mousePos.y.toDouble()))
+            documentController.toolDragged(Point(mousePos.x.toDouble(), mousePos.y.toDouble()))
             mouseDraged = true
 
         }
@@ -47,6 +47,37 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
     fun mouseWheelZoom(scrollDelta: Float) {
 //        if (pressed)
         documentController.zoom(zoomDelta = scrollDelta * 0.5f, localMousePos = mousePos)
+    }
+
+
+    private var isPressed = false
+    private var mouseMoved = false
+    override fun inputDown(position: Offset) {
+        mouseMoved = false
+        isPressed = true
+        mousePos = Point(position.x.toDouble(), position.y.toDouble())
+        documentController.toolDragged(mousePos)
+
+    }
+
+    override fun inputUp(position: Offset) {
+        if (!mouseMoved) {
+            documentController.toolClicked()
+        }
+
+        documentController.toolDraggedEnded()
+
+        mouseMoved = false
+        isPressed = false
+
+    }
+
+    override fun inputMoved(position: Offset) {
+        mouseMoved = true
+        mousePos = Point(position.x.toDouble(), position.y.toDouble())
+        if (isPressed) {
+            documentController.toolDragged(mousePos)
+        }
     }
 
 }

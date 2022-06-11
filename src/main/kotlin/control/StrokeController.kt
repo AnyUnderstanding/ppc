@@ -5,8 +5,8 @@ import data.Stroke
 import util.PointList
 import util.ScalarList
 import util.Point
+import util.calcBoundingBox
 import java.util.stream.IntStream
-import kotlin.math.round
 import kotlin.streams.toList
 
 
@@ -19,11 +19,6 @@ class StrokeController {
     private val sampleAfter = 5
     private val amt = 5
 
-    // used to keep track of the bounding box containing to whole stroke
-    var left = Double.POSITIVE_INFINITY
-    var right = Double.NEGATIVE_INFINITY
-    var top =  Double.NEGATIVE_INFINITY
-    var bottom = Double.POSITIVE_INFINITY
 
 
     fun catmullRomSpline(p0: Point, p1: Point, p2: Point, p3: Point): PointList {
@@ -94,25 +89,21 @@ class StrokeController {
 
     fun newStroke(s: Stroke) {
 
-        stroke.pendingPoints.forEach{
-            calcBounds(it)
-        }
+        val allPoints = mutableListOf<Point>()
+        allPoints.addAll(0, stroke.pendingPoints)
+        allPoints.addAll(0, stroke.spline)
 
         // calculate artificial bounding box to handle single point strokes
-        if (stroke.spline.size == 0 && stroke.pendingPoints.size == 1) {
-            left = stroke.pendingPoints[0].x -1
-            right = stroke.pendingPoints[0].x + 1
-            top = stroke.pendingPoints[0].y - 1
-            bottom = stroke.pendingPoints[0].y + 1
-            stroke.boundingBoxes.add(BoundingBox(Point(left, top), Point(right, bottom)))
+        if (allPoints.size == 1) {
+            val px = stroke.pendingPoints[0].x
+            val py = stroke.pendingPoints[0].y
+
+            stroke.boundingBoxes.add(BoundingBox(Point(px - 1, py - 1), Point(px + 1, py + 1)))
+            stroke.mainBoundingBox = BoundingBox(Point(px - 1, py - 1), Point(px + 1, py + 1))
+        } else {
+            stroke.mainBoundingBox = calcBoundingBox(allPoints)
         }
-        stroke.mainBoundingBox = BoundingBox(Point(left, top), Point(right, bottom))
 
-
-        left = Double.POSITIVE_INFINITY
-        right = Double.NEGATIVE_INFINITY
-        top =  Double.NEGATIVE_INFINITY
-        bottom = Double.POSITIVE_INFINITY
 
         stroke = s
         sampleCount = 0
@@ -137,20 +128,18 @@ class StrokeController {
 
 
                     stroke.spline.addAll(
-                        catmullRomSpline(points[i],
+                        catmullRomSpline(
+                            points[i],
                             points[i + 1],
                             points[i + 2],
-                            points[i + 3]).values.map {
-                            calcBounds(it)
-                            it}
+                            points[i + 3]
+                        ).values
                     )
                 }
                 val i = points.size - 3
                 val endPoint = (points[i + 2] - points[i + 1]) + points[i + 2]
 
-                stroke.spline.addAll(catmullRomSpline(points[i], points[i + 1], points[i + 2], endPoint).values.map {
-                    calcBounds(it)
-                it})
+                stroke.spline.addAll(catmullRomSpline(points[i], points[i + 1], points[i + 2], endPoint).values)
                 stroke.pendingPoints.clear()
             }
         }
@@ -160,10 +149,4 @@ class StrokeController {
 
     }
 
-    fun calcBounds(point: Point){
-        if (point.x < left) left = point.x
-        if (point.x > right) right = point.x
-        if (point.y > top) top = point.y
-        if (point.y < bottom) bottom = point.y
-    }
 }

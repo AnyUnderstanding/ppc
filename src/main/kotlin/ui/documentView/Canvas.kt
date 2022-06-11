@@ -1,14 +1,8 @@
 package ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -22,12 +16,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import control.DocumentController
 import data.*
 import util.Point
-import kotlin.math.abs
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.*
-import java.awt.Cursor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,18 +33,22 @@ var h = 0
 fun PPCCanvas(controller: DocumentController) {
     val state = controller.state
     val document = state.document.value
-    var mousePos by remember { mutableStateOf( Offset(0f,0f) )}
+    var mousePos by remember { mutableStateOf(Offset(0f, 0f)) }
 
 
 
     Canvas(
         modifier = Modifier.fillMaxSize().onPointerEvent(PointerEventType.Move) {
-            controller.mouse.mouseMoved(it.changes.first().position)
+            //controller.mouse.mouseMoved(it.changes.first().position)
+            controller.mouse.inputMoved(it.changes.first().position)
             mousePos = it.changes.first().position
         }.onPointerEvent(PointerEventType.Press) {
-            controller.mouse.mousePressed(it.changes.first().position)
+            //controller.mouse.mousePressed(it.changes.first().position)
+            controller.mouse.inputDown(it.changes.first().position)
         }.onPointerEvent(PointerEventType.Release) {
-            controller.mouse.mouseReleased()
+            //controller.mouse.mouseReleased()
+            controller.mouse.inputUp(it.changes.first().position)
+
         }.onSizeChanged {
             controller.resize(it.width, it.height)
             w = it.width
@@ -167,7 +162,7 @@ fun PPCCanvas(controller: DocumentController) {
             }
         }
 
-        when(state.document.value.selectedTool.value){
+        when (state.document.value.selectedTool.value) {
             Tool.Eraser -> drawCircle(
                 color = Color(0xAA9C9C9C),
                 center = mousePos,
@@ -181,7 +176,7 @@ fun PPCCanvas(controller: DocumentController) {
             )
 
             Tool.Selector -> {
-                state.documentController.selection.value?.let{selection->
+                state.documentController.selection.value?.let { selection ->
                     if (selection.end.value == null) return@let
                     val selectionPath = Path()
                     selectionPath.moveTo(getLocalDrawingOffset(selection.start, document))
@@ -190,32 +185,39 @@ fun PPCCanvas(controller: DocumentController) {
                     val start = getLocalDrawingOffset(selection.start, document)
                     val end = getLocalDrawingOffset(selection.end.value!!, document)
 
-                    selectionPath.addRect(Rect(
-                        Offset(min(start.x,end.x),min(start.y,end.y)),
-                        Offset(max(start.x,end.x),max(start.y,end.y))
-                    ))
-
-                    val f = Path()
-
-                    selection.selectedStrokes.forEach{s ->
-
-                    val sStart = getLocalDrawingOffset(s.mainBoundingBox.point0, document)
-                    val sEnd = getLocalDrawingOffset(s.mainBoundingBox.point1, document)
-                    f.addRect(
+                    selectionPath.addRect(
                         Rect(
-                            Offset(min(sStart.x,sEnd.x),min(sStart.y,sEnd.y)),
-                            Offset(max(sStart.x,sEnd.x),max(sStart.y,sEnd.y))
+                            Offset(min(start.x, end.x), min(start.y, end.y)),
+                            Offset(max(start.x, end.x), max(start.y, end.y))
                         )
                     )
 
+                    val strokeBoundingPath = Path()
+
+                    selection.strokeBoundingBox?.let { bb ->
+
+                        val sStart = getLocalDrawingOffset(bb.point0, document)
+                        val sEnd = getLocalDrawingOffset(bb.point1, document)
+                        strokeBoundingPath.addRect(
+                            Rect(
+                                Offset(min(sStart.x, sEnd.x) - 5, min(sStart.y, sEnd.y) - 5),
+                                Offset(max(sStart.x, sEnd.x) + 5, max(sStart.y, sEnd.y) + 5)
+                            )
+                        )
+
                     }
                     drawPath(
-                        path = f,
+                        path = strokeBoundingPath,
                         color = Color(0xAA7B7B7B),
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
                             width = 1.5F * document.zoomFactor,
                             cap = StrokeCap.Round,
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10F * document.zoomFactor, 10F * document.zoomFactor), 00F)
+                            pathEffect = PathEffect.dashPathEffect(
+                                floatArrayOf(
+                                    10F * document.zoomFactor,
+                                    10F * document.zoomFactor
+                                ), 00F
+                            )
                         )
                     )
 
@@ -225,7 +227,12 @@ fun PPCCanvas(controller: DocumentController) {
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
                             width = 1.5F * document.zoomFactor,
                             cap = StrokeCap.Round,
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10F * document.zoomFactor, 10F * document.zoomFactor), 00F)
+                            pathEffect = PathEffect.dashPathEffect(
+                                floatArrayOf(
+                                    10F * document.zoomFactor,
+                                    10F * document.zoomFactor
+                                ), 00F
+                            )
                         )
                     )
                 }
