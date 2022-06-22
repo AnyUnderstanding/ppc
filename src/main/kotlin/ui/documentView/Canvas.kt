@@ -138,14 +138,7 @@ fun PPCCanvas(controller: DocumentController) {
 
 
 
-                drawPath(
-                    path = path,
-                    color = Color.DarkGray,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(
-                        width = 1F,
-                        cap = StrokeCap.Round,
-                    )
-                )
+
 
 
 

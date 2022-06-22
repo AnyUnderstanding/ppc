@@ -20,7 +20,10 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("com.beust:klaxon:5.6")
+
 }
 
 tasks.withType<KotlinCompile>() {

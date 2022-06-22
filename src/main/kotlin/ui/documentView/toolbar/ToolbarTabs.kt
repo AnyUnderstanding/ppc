@@ -7,9 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import control.remoteclient.ConnectionController
 import data.DocumentViewControlState
 import data.Tool
 import ui.documentView.toolbar.colorpicker.ColorSlider
+import kotlin.random.Random
 
 
 val Tab1 = @Composable { documentViewControlState: DocumentViewControlState -> Tab1(documentViewControlState) }
@@ -58,6 +60,24 @@ fun Tab2(documentViewControlState: DocumentViewControlState) {
         }
         Button(onClick = { documentViewControlState.activeDialog.value = @Composable { ColorSlider(documentViewControlState.documentController.value) } }) {
             Text("color picker")
+        }
+        Button(onClick = {
+            documentViewControlState.documentController.value.connectionController.connect(sessionID = "asd", name = "MaxMustermann")
+        }) {
+            Text("connect")
+        }
+        Button(onClick = {
+            val x = Random.nextDouble(100.0)
+            val y = Random.nextDouble(100.0)
+            documentViewControlState.documentController.value.connectionController.send("{\"type\": \"draw\",\"x\":$x,\"y\":$y}\n")
+        }) {
+            Text("draw")
+        }
+        Button(onClick = {
+
+            documentViewControlState.documentController.value.connectionController.send("{\"type\": \"newStroke\"}\n")
+        }) {
+            Text("new Stroke")
         }
     }
 }

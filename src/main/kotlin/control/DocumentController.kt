@@ -2,6 +2,7 @@ package control
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import control.remoteclient.ConnectionController
 import data.*
 import util.Point
 import kotlin.math.abs
@@ -14,16 +15,19 @@ class DocumentController : Controller {
     var selection: MutableState<Selection?> = mutableStateOf(null)
     var selectedPage: Page? = null
         private set
+    val strokeEditorDictionary = HashMap<String, Stroke>()
+    val connectionController = ConnectionController(this)
 
 //    private var List<List<Point>>
 
 
-    fun toolDraggedEnded(){
+    fun toolDraggedEnded() {
         when (state.document.value.selectedTool.value) {
             Tool.Pen -> if (selectedPage != null) newStroke()
 
         }
     }
+
     fun toolDragged(point: Point) {
 
         val globalPoint = localCoordsToGlobal(point)
@@ -62,7 +66,12 @@ class DocumentController : Controller {
 
             selection.value!!.selectedStrokes.clear()
             selection.value!!.addStroke(
-                selectedPage!!.strokes.filter { BoundingBox(selection.value!!.start, selection.value!!.end.value!!) in it.mainBoundingBox }
+                selectedPage!!.strokes.filter {
+                    BoundingBox(
+                        selection.value!!.start,
+                        selection.value!!.end.value!!
+                    ) in it.mainBoundingBox
+                }
             )
         }
 
@@ -77,6 +86,7 @@ class DocumentController : Controller {
             }
         }
         if (selectedPage != null) {
+            connectionController.addPointToStroke(globalPoint)
             strokeController.addPoint(globalPoint)
         }
     }
@@ -92,25 +102,25 @@ class DocumentController : Controller {
             // needed to avoid java.util.ConcurrentModificationException
             val erasedStrokes = mutableListOf<Stroke>()
 
-            val eraserBoundingBox = BoundingBox(globalPoint - Point(5,5),globalPoint + Point(5,5))
+            val eraserBoundingBox = BoundingBox(globalPoint - Point(5, 5), globalPoint + Point(5, 5))
 
-                selectedPage?.strokes?.forEach { s ->
-                    if (eraserBoundingBox !in s.mainBoundingBox) return@forEach
+            selectedPage?.strokes?.forEach { s ->
+                if (eraserBoundingBox !in s.mainBoundingBox) return@forEach
 
-                    run bb@{
-                        s.boundingBoxes.forEach { bb ->
-                            if (eraserBoundingBox in bb) {
+                run bb@{
+                    s.boundingBoxes.forEach { bb ->
+                        if (eraserBoundingBox in bb) {
 
-                                if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.document.value.zoomFactor) {
-                                    println((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length)
-                                    erasedStrokes.add(s)
-                                    return@bb
-                                }
-
+                            if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.document.value.zoomFactor) {
+                                println((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length)
+                                erasedStrokes.add(s)
+                                return@bb
                             }
+
                         }
                     }
                 }
+            }
 
             selectedPage?.strokes?.removeAll(erasedStrokes)
 
@@ -119,12 +129,36 @@ class DocumentController : Controller {
 
     }
 
-    fun newStroke() {
+    fun newStroke(fromNetwork: Boolean = false, editor: String = "" ) {
+        if (fromNetwork){
+            println("network bet work")
+            if (editor.isBlank()) throw java.lang.IllegalArgumentException("expecting editor name")
+            // replace later with page id from parameters
+            state.document.value.pages[0]?.let {
+                println("let it be")
+
+                val stroke = state.document.value.pages[0].newStroke(state.document.value.selectedColor)
+                strokeEditorDictionary[editor] = stroke
+            }
+            return
+        }
+        connectionController.newStroke()
         val stroke = selectedPage?.newStroke(state.document.value.selectedColor)
         if (stroke != null)
             strokeController.newStroke(stroke)
+    }
+    fun strokeEditedFromNetwork(point: Point, editor: String){
+        // todo: check if point is in Page
+        println("let me in")
+
+        strokeEditorDictionary[editor]?.let {
+            it.spline.add(point)
+            println("in the stroke having some fun adding all those points")
+        }
 
     }
+
+
 
 //    fun newStroke() {
 //        val stroke = Stroke()
@@ -134,7 +168,6 @@ class DocumentController : Controller {
 //    }
 
     fun getPageByPoint(point: Point): Page? {
-
         return try {
             state.document.value.pages.first {
                 point.x in it.topLeft.x..(it.topLeft.x + state.document.value.pageSize.width) &&
@@ -190,15 +223,13 @@ class DocumentController : Controller {
         selection.value = null
     }
 
-    fun moveSelection(){
+    fun moveSelection() {
 
         // todo ... fix (:
-        selection.value?.selectedStrokes?.forEach{
-            it.move(Point(30.0,30.0))
+        selection.value?.selectedStrokes?.forEach {
+            it.move(Point(30.0, 30.0))
         }
     }
-
-
 
 
 }
