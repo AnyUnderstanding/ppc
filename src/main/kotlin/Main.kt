@@ -4,6 +4,7 @@ import androidx.compose.ui.window.application
 import control.PPCApplication
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.math.sin
 
 // todo: stroke doesn't get completed when page is left
 // todo: fix zero-width or zero-height boundingBox
@@ -13,8 +14,6 @@ import kotlinx.coroutines.runBlocking
 // todo: proposed solutions:
 // todo: stroke has an global offset for the starting point afterwards only the between the points can be stored by using smaller datatypes like bytes
 fun main() = application {
-    PPCApplication(rememberApplicationState())
-    PPCApplication(rememberApplicationState())
     PPCApplication(rememberApplicationState())
     //   PPCApplication(rememberApplicationState())
 //    val a = 1.0

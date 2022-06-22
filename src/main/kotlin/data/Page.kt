@@ -15,4 +15,6 @@ data class Page(var pageType: PageType, val topLeft: Point) {
         strokes.add(Stroke(color))
         return strokes.last()
     }
+
+
 }

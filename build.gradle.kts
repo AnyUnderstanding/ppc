@@ -24,6 +24,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("com.beust:klaxon:5.6")
 
+
 }
 
 tasks.withType<KotlinCompile>() {

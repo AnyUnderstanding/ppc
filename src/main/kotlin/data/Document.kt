@@ -15,7 +15,7 @@ import util.Point
 
 // Point, Page
 @kotlinx.serialization.Serializable
-class Document(val pageSize: PageSize) {
+data class Document(val pageSize: PageSize) {
     // todo: serialization
     var selectedTool = mutableStateOf( Tool.Pen )
     var selectedColor: ULong = 0xFF0000FFU
@@ -47,6 +47,11 @@ class Document(val pageSize: PageSize) {
     }
 
     fun getPage(i: Int): Page = pages[i]
+
+
+
+
+
 }
 
 class SnapshotListSerializer<T>(private val dataSerializer: KSerializer<T>) : KSerializer<SnapshotStateList<T>> {

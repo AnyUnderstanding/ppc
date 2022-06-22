@@ -22,9 +22,14 @@ import androidx.compose.ui.input.pointer.*
 import kotlin.math.max
 import kotlin.math.min
 
+
 // todo: should be moved to the window later on
 var w = 0
 var h = 0
+
+var strokeColor = mutableListOf<Color>()
+var strokePathCache = mutableListOf<Path>()
+
 
 // todo: crash on mousedown without color selected
 
@@ -34,7 +39,6 @@ fun PPCCanvas(controller: DocumentController) {
     val state = controller.state
     val document = state.document.value
     var mousePos by remember { mutableStateOf(Offset(0f, 0f)) }
-
 
 
     Canvas(
@@ -61,6 +65,7 @@ fun PPCCanvas(controller: DocumentController) {
             it.changes.first()
         }
     ) {
+
 
         /*
         drawPage(
@@ -103,21 +108,25 @@ fun PPCCanvas(controller: DocumentController) {
             )
         }
 
-
-        document.pages.forEach {
-            it.strokes.forEach strokeLoop@{ s ->
-
-                val path = Path()
-                if (s.spline.size > 0)
-                    path.moveTo(getLocalDrawingOffset(s.spline[0], document))
-                else if (s.pendingPoints.size > 0)
-                    path.moveTo(getLocalDrawingOffset(s.pendingPoints[0], document))
-                else return@strokeLoop
-                s.spline.drop(1).forEachIndexed { i, p ->
-                    // println("from:  ${s.spline[i]}  -  to: $p")
+        if (state.documentController.mutexTest.tryLock()) {
+            strokePathCache.clear()
+            strokeColor.clear()
 
 
-                    if (s.spline[i].x.isNaN() || s.spline[i].y.isNaN() || p.x.isNaN() || p.y.isNaN()) return@forEachIndexed
+            document.pages.forEach {
+                it.strokes.forEach strokeLoop@{ s ->
+
+                    val path = Path()
+                    if (s.spline.size > 0)
+                        path.moveTo(getLocalDrawingOffset(s.spline[0], document))
+                    else if (s.pendingPoints.size > 0)
+                        path.moveTo(getLocalDrawingOffset(s.pendingPoints[0], document))
+                    else return@strokeLoop
+                    s.spline.drop(1).forEachIndexed { i, p ->
+                        // println("from:  ${s.spline[i]}  -  to: $p")
+
+
+                        if (s.spline[i].x.isNaN() || s.spline[i].y.isNaN() || p.x.isNaN() || p.y.isNaN()) return@forEachIndexed
 
 //                    drawLine(
 //                        color = Color.Red,
@@ -125,35 +134,49 @@ fun PPCCanvas(controller: DocumentController) {
 //                        end = getLocalDrawingOffset(p, document = document),
 //                        3.0F * document.zoomFactor
 //                    )
-                    path.lineTo(getLocalDrawingOffset(p, document))
-                    // drawCircle(color = Color.Blue, center = p.toOffset(), radius = 2.0F)
+                        path.lineTo(getLocalDrawingOffset(p, document))
+                        // drawCircle(color = Color.Blue, center = p.toOffset(), radius = 2.0F)
+                    }
+
+
+                    s.pendingPoints.forEach { p ->
+                        path.lineTo(getLocalDrawingOffset(p, document))
+                    }
+
+
+
+
+                    drawPath(
+                        path = path,
+                        color = Color(s.color),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(
+                            width = 1.0F * document.zoomFactor,
+                            cap = StrokeCap.Round
+                        )
+                    )
+                    strokePathCache.add(Path())
+                    strokeColor.add(Color(s.color))
+
                 }
-
-                s.pendingPoints.forEach { p ->
-                    path.lineTo(getLocalDrawingOffset(p, document))
-                }
-
-
-
-
-
-
-
-
-
-
+            }
+            state.documentController.mutexTest.unlock()
+        } else {
+            println(strokePathCache.size)
+            println("cant lock mutex")
+            strokePathCache.zip(strokeColor).forEach {
                 drawPath(
-                    path = path,
-                    color = Color(s.color),
+                    path = it.first,
+                    color = it.second,
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
                         width = 1.0F * document.zoomFactor,
                         cap = StrokeCap.Round
                     )
                 )
-
-
             }
+
         }
+
+
 
         when (state.document.value.selectedTool.value) {
             Tool.Eraser -> drawCircle(

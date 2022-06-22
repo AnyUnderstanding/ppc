@@ -2,21 +2,25 @@ package control
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import control.remoteclient.ConnectionController
 import data.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import util.Point
 import kotlin.math.abs
 
 class DocumentController : Controller {
     val mouse = MouseInputHandler(this)
     val state: DocumentControlState = DocumentControlState(this, Document(PageSize.A4))
+    val connectionController = ConnectionController(this)
     val strokeController = StrokeController()
     private var canvasSize = Point(0, 0)
     var selection: MutableState<Selection?> = mutableStateOf(null)
     var selectedPage: Page? = null
         private set
-    val strokeEditorDictionary = HashMap<String, Stroke>()
-    val connectionController = ConnectionController(this)
+    val strokeEditorDictionary = HashMap<String, StrokeController>()
+    val mutexTest = Mutex()
 
 //    private var List<List<Point>>
 
@@ -86,8 +90,8 @@ class DocumentController : Controller {
             }
         }
         if (selectedPage != null) {
-            connectionController.addPointToStroke(globalPoint)
             strokeController.addPoint(globalPoint)
+            connectionController.addPointToStroke(globalPoint)
         }
     }
 
@@ -129,35 +133,38 @@ class DocumentController : Controller {
 
     }
 
-    fun newStroke(fromNetwork: Boolean = false, editor: String = "" ) {
-        if (fromNetwork){
-            println("network bet work")
+    fun newStroke(fromNetwork: Boolean = false, editor: String = "") {
+        if (fromNetwork) {
             if (editor.isBlank()) throw java.lang.IllegalArgumentException("expecting editor name")
             // replace later with page id from parameters
-            state.document.value.pages[0]?.let {
-                println("let it be")
+            state.document.value.pages[0].let {
 
                 val stroke = state.document.value.pages[0].newStroke(state.document.value.selectedColor)
-                strokeEditorDictionary[editor] = stroke
+                strokeEditorDictionary[editor] = StrokeController()
+                strokeEditorDictionary[editor]!!.newStroke(stroke)
             }
             return
         }
-        connectionController.newStroke()
         val stroke = selectedPage?.newStroke(state.document.value.selectedColor)
-        if (stroke != null)
+        if (stroke != null) {
             strokeController.newStroke(stroke)
-    }
-    fun strokeEditedFromNetwork(point: Point, editor: String){
-        // todo: check if point is in Page
-        println("let me in")
-
-        strokeEditorDictionary[editor]?.let {
-            it.spline.add(point)
-            println("in the stroke having some fun adding all those points")
+            connectionController.newStroke()
         }
 
     }
 
+    suspend fun strokeEditedFromNetwork(point: Point, editor: String) {
+        // todo: check if point is in Page
+
+        strokeEditorDictionary[editor]?.let {
+
+            mutexTest.withLock {
+                it.addPoint(point)
+
+            }
+        }
+
+    }
 
 
 //    fun newStroke() {
@@ -230,6 +237,8 @@ class DocumentController : Controller {
             it.move(Point(30.0, 30.0))
         }
     }
+
+
 
 
 }

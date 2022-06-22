@@ -10,7 +10,7 @@ import java.util.stream.IntStream
 import kotlin.streams.toList
 
 
-class StrokeController {
+class StrokeController() {
     // https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
 
     var stroke = Stroke(0xFF000000U)
@@ -18,7 +18,6 @@ class StrokeController {
     private var sampleCount = 0
     private val sampleAfter = 5
     private val amt = 5
-
 
 
     fun catmullRomSpline(p0: Point, p1: Point, p2: Point, p3: Point): PointList {
@@ -92,6 +91,7 @@ class StrokeController {
         val allPoints = mutableListOf<Point>()
         allPoints.addAll(0, stroke.pendingPoints)
         allPoints.addAll(0, stroke.spline)
+
 
         // calculate artificial bounding box to handle single point strokes
         if (allPoints.size == 1) {

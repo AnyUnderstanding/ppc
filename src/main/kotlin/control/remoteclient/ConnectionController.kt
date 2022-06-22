@@ -4,6 +4,7 @@ import com.beust.klaxon.Klaxon
 import control.DocumentController
 import control.remoteclient.events.Event
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 import util.Point
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -33,7 +34,6 @@ class ConnectionController(private val documentController: DocumentController) {
                         // awaiting message
                         val msg = readChannel?.readUTF()
 
-                        println(msg)
                         if (msg.isNullOrBlank()) continue
                         Klaxon().parse<Event>(msg)?.handle(documentController)
                     } catch (e: Exception) {
@@ -46,7 +46,6 @@ class ConnectionController(private val documentController: DocumentController) {
 
     fun send(msg: String) {
         ConcurrentExecutionController.scheduleJob {
-            writeChannel?.let { println("hey ho meine lieben minecraft freunde") }
             writeChannel?.writeUTF(msg)
             writeChannel?.flush()
         }
@@ -59,6 +58,7 @@ class ConnectionController(private val documentController: DocumentController) {
     fun addPointToStroke(point: Point){
         val x = point.x
         val y = point.y
+//        Json.encodeToString()
         send("{\"type\": \"draw\",\"x\":$x,\"y\":$y}")
     }
 
