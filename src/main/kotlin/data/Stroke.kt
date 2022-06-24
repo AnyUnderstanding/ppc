@@ -1,9 +1,11 @@
 package data
 
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import util.Point
+import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -11,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
 //todo: color serialization
 // todo: currently the strokes get created on mouserelease therefore the color must be set after initialization -> change in future to create on mouse press
-data class Stroke(var color: ULong) {
+data class Stroke(var color: ULong, val uuid: String = UUID.randomUUID().toString()) {
     @Serializable(with = SnapshotListSerializer::class)
     val spline = mutableStateListOf<Point>()
 

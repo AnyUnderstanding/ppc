@@ -154,7 +154,7 @@ fun PPCCanvas(controller: DocumentController) {
                             cap = StrokeCap.Round
                         )
                     )
-                    strokePathCache.add(Path())
+                    strokePathCache.add(path)
                     strokeColor.add(Color(s.color))
 
                 }

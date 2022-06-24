@@ -4,19 +4,22 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Transient
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import util.Point
+import java.io.File
+import java.util.UUID
 
 // Point, Page
-@kotlinx.serialization.Serializable
+@Serializable
 data class Document(val pageSize: PageSize) {
-    // todo: serialization
+
+    @Serializable(with = MutableStateSerializer::class)
     var selectedTool = mutableStateOf( Tool.Pen )
     var selectedColor: ULong = 0xFF0000FFU
     var scrollX = 0.0f
@@ -26,10 +29,10 @@ data class Document(val pageSize: PageSize) {
         private set
 
     //    @Transient
-    @kotlinx.serialization.Serializable(with = MutableStateSerializer::class)
+    @Serializable(with = MutableStateSerializer::class)
     var centerPoint = mutableStateOf(Point(0, 0))
 
-    @kotlinx.serialization.Serializable(with = SnapshotListSerializer::class)
+    @Serializable(with = SnapshotListSerializer::class)
 //    @Transient
 //    @Contextual
     val pages = mutableStateListOf<Page>()
@@ -42,8 +45,16 @@ data class Document(val pageSize: PageSize) {
         this.centerPoint.value = centerPoint
     }
 
-    fun newPage(pageType: PageType, topLeft: Point) {
-        pages.add(Page(pageType, topLeft))
+    fun newPage(pageType: PageType, topLeft: Point, uuid: String = "") {
+        if (uuid.isBlank())
+            pages.add(Page(pageType, topLeft))
+        else
+            pages.add(Page(pageType, topLeft, uuid = uuid))
+    }
+
+    //@OptIn(DelicateCoroutinesApi::class)
+    fun toJSON(): String {
+        return Json.encodeToString(this)
     }
 
     fun getPage(i: Int): Page = pages[i]

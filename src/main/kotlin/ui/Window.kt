@@ -14,6 +14,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.awt.FileDialog
 import java.io.File
 import java.nio.file.Path
@@ -39,11 +41,7 @@ fun <T : WindowControlState> PPCWindow(
     }
 }
 
-//@OptIn(DelicateCoroutinesApi::class)
-private suspend fun File.saveDocument(document: Document) {
-    val bytes = Cbor.encodeToByteArray(document)
-    writeBytes(bytes)
-}
+
 
 private suspend fun File.openDocument(): Document {
     val bytes = readBytes()

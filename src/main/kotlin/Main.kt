@@ -15,6 +15,7 @@ import kotlin.math.sin
 // todo: stroke has an global offset for the starting point afterwards only the between the points can be stored by using smaller datatypes like bytes
 fun main() = application {
     PPCApplication(rememberApplicationState())
+    PPCApplication(rememberApplicationState())
     //   PPCApplication(rememberApplicationState())
 //    val a = 1.0
 //    // override fun contains(value: T): Boolean = lessThanOrEquals(start, value) && lessThanOrEquals(value, endInclusive)

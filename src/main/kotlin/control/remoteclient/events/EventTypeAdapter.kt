@@ -8,6 +8,11 @@ class EventTypeAdapter : TypeAdapter<Event> {
         "join" -> JoinEvent::class
         "draw" -> DrawEvent::class
         "newStroke" -> NewStrokeEvent::class
+        "erase" -> EraseStrokeEvent::class
+        "newPage" -> NewPageEvent::class
+        "documentLoad" -> DocumentLoadEvent::class
+        "documentRequest" -> DocumentRequestEvent::class
+
         else -> throw UnkownEventException("Unknown event: $type")
     }
 }

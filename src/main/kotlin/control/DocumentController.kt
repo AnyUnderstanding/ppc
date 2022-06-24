@@ -2,7 +2,6 @@ package control
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import control.remoteclient.ConnectionController
 import data.*
 import kotlinx.coroutines.sync.Mutex
@@ -133,22 +132,34 @@ class DocumentController : Controller {
 
     }
 
-    fun newStroke(fromNetwork: Boolean = false, editor: String = "") {
+    // only use params if fromNetwork = true
+    fun newStroke(
+        fromNetwork: Boolean = false,
+        editor: String = "",
+        color: String = "",
+        pageUUID: String = "",
+        strokeUUID: String = ""
+    ) {
         if (fromNetwork) {
             if (editor.isBlank()) throw java.lang.IllegalArgumentException("expecting editor name")
             // replace later with page id from parameters
             state.document.value.pages[0].let {
+                try {
+                    val stroke = state.document.value.pages[0].newStroke(color.toULong(), uuid = strokeUUID)
 
-                val stroke = state.document.value.pages[0].newStroke(state.document.value.selectedColor)
-                strokeEditorDictionary[editor] = StrokeController()
-                strokeEditorDictionary[editor]!!.newStroke(stroke)
+                    strokeEditorDictionary[editor] = StrokeController()
+                    strokeEditorDictionary[editor]!!.newStroke(stroke)
+                } catch (_: Exception) {
+
+                }
             }
+
             return
         }
         val stroke = selectedPage?.newStroke(state.document.value.selectedColor)
         if (stroke != null) {
             strokeController.newStroke(stroke)
-            connectionController.newStroke()
+            connectionController.newStroke(state.document.value.selectedColor.toString(), selectedPage!!.uuid, stroke.uuid)
         }
 
     }
@@ -157,13 +168,23 @@ class DocumentController : Controller {
         // todo: check if point is in Page
 
         strokeEditorDictionary[editor]?.let {
-
             mutexTest.withLock {
                 it.addPoint(point)
 
             }
         }
+    }
 
+    suspend fun strokeErasedFromNetwork(strokeUUID: String) {
+        mutexTest.withLock {
+
+        state.document.value.pages.forEach { p ->
+                p.strokes.first { it.uuid == strokeUUID }.let {
+                    p.strokes.remove(it)
+                    return
+                }
+            }
+        }
     }
 
 
@@ -198,10 +219,17 @@ class DocumentController : Controller {
 
     }
 
-    fun newPage() {
+    fun newPage(fromNetwork: Boolean = false, pageUUID: String = "") {
+
         val document = state.document.value
         val tp = Point(10, (10 + (document.pageSize.height + 10) * document.pageCount).toDouble())
+
+        if (fromNetwork){
+            document.newPage(PageType.Ruled, tp, uuid = pageUUID)
+            return
+        }
         document.newPage(PageType.Ruled, tp)
+
     }
 
     fun zoom(zoomDelta: Float, localMousePos: Point) {
@@ -237,8 +265,6 @@ class DocumentController : Controller {
             it.move(Point(30.0, 30.0))
         }
     }
-
-
 
 
 }

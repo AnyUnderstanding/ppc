@@ -27,7 +27,6 @@ fun ToolDialog(
             indication = null,
         ) {
             documentViewControlState.activeDialog.value = null
-            println("null")
 
         },
     ) {
