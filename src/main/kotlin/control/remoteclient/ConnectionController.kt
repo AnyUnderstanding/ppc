@@ -15,7 +15,7 @@ class ConnectionController(private val documentController: DocumentController) {
     private var writeChannel: DataOutputStream? = null
 
     fun connect(
-        addr: String = "0.0.0.0",
+        addr: String = "192.168.1.203",
         port: Int = 9002,
         sessionID: String,
         name: String,
