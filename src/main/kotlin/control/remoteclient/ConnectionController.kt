@@ -14,14 +14,24 @@ class ConnectionController(private val documentController: DocumentController) {
     private var readChannel: DataInputStream? = null
     private var writeChannel: DataOutputStream? = null
 
-    fun connect(addr: String = "0.0.0.0", port: Int = 9002, sessionID: String, name: String) {
+    fun connect(
+        addr: String = "0.0.0.0",
+        port: Int = 9002,
+        sessionID: String,
+        name: String,
+        createSession: Boolean = false
+    ) {
 
         val socket = Socket(addr, port)
 
         readChannel = DataInputStream(socket.getInputStream())
         writeChannel = DataOutputStream(socket.getOutputStream())
+        val connectionData: String = if (createSession) {
+            "{\"type\": \"createSession\",\"name\": \"$name\"}"
 
-        val connectionData = "{\"type\": \"join\",\"sessionID\": \"$sessionID\",\"name\": \"$name\"}\n"
+        }else {
+            "{\"type\": \"join\",\"sessionID\": \"$sessionID\",\"name\": \"$name\"}"
+        }
 
         ConcurrentExecutionController.scheduleJob {
             withContext(Dispatchers.IO) {
@@ -34,6 +44,8 @@ class ConnectionController(private val documentController: DocumentController) {
                     val msg = readChannel?.readUTF()
 
                     if (msg.isNullOrBlank()) continue
+                    println(msg)
+
                     Klaxon().parse<Event>(msg)?.handle(documentController)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -61,7 +73,7 @@ class ConnectionController(private val documentController: DocumentController) {
         send("{\"type\": \"draw\",\"x\":$x,\"y\":$y}")
     }
 
-    fun documentRequest(){
+    fun documentRequest() {
         send("{\"type\": \"docRequest\"}")
     }
 

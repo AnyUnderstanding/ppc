@@ -8,7 +8,11 @@ class JoinEvent(type: String, val status: String) : Event(type) {
     override suspend fun handle(documentController: DocumentController) {
         when(status){
             "success" -> {
-                    println("connected")
+                println("connected")
+                println("fetching doc")
+
+                documentController.state.connected.value = true
+                documentController.connectionController.documentRequest()
             }
             "session not found" -> { println("unknown session") }
             else -> {}

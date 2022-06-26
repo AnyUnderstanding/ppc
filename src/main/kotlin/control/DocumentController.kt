@@ -13,13 +13,13 @@ class DocumentController : Controller {
     val mouse = MouseInputHandler(this)
     val state: DocumentControlState = DocumentControlState(this, Document(PageSize.A4))
     val connectionController = ConnectionController(this)
-    val strokeController = StrokeController()
+    private val strokeController = StrokeController()
     private var canvasSize = Point(0, 0)
     var selection: MutableState<Selection?> = mutableStateOf(null)
     var selectedPage: Page? = null
         private set
-    val strokeEditorDictionary = HashMap<String, StrokeController>()
-    val mutexTest = Mutex()
+    private val strokeEditorDictionary = HashMap<String, StrokeController>()
+    val strokeMutex = Mutex()
 
 //    private var List<List<Point>>
 
@@ -168,7 +168,7 @@ class DocumentController : Controller {
         // todo: check if point is in Page
 
         strokeEditorDictionary[editor]?.let {
-            mutexTest.withLock {
+            strokeMutex.withLock {
                 it.addPoint(point)
 
             }
@@ -176,7 +176,7 @@ class DocumentController : Controller {
     }
 
     suspend fun strokeErasedFromNetwork(strokeUUID: String) {
-        mutexTest.withLock {
+        strokeMutex.withLock {
 
         state.document.value.pages.forEach { p ->
                 p.strokes.first { it.uuid == strokeUUID }.let {

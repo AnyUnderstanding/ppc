@@ -4,15 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import data.Document
 import data.DocumentViewControlState
 import data.Tool
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import ui.documentView.toolbar.colorpicker.ColorSlider
+import x
 
 
 val Tab1 = @Composable { documentViewControlState: DocumentViewControlState -> Tab1(documentViewControlState) }
@@ -60,32 +59,21 @@ fun Tab1(documentViewControlState: DocumentViewControlState) {
 @Composable
 fun Tab2(documentViewControlState: DocumentViewControlState) {
     Row {
-
-        Button(onClick = { documentViewControlState.documentController.value.newPage() }) {
-            Text("new Page")
+        IconButton(false, "addPage.svg", 60.dp, Modifier.height(60.dp).padding(10.dp)) {
+            documentViewControlState.documentController.value.newPage()
         }
-        Button(onClick = {
+
+        IconButton(false, "colorPicker.svg", 60.dp, Modifier.height(60.dp).padding(10.dp)) {
             documentViewControlState.activeDialog.value =
                 @Composable { ColorSlider(documentViewControlState.documentController.value) }
-        }) {
-            Text("color picker")
         }
-        Button(onClick = {
 
+        IconButton(false, "connect.svg", 60.dp, Modifier.height(60.dp).padding(10.dp)) {
             documentViewControlState.activeDialog.value =
-                @Composable { ConnectDialog(documentViewControlState.documentController.value.connectionController) }
-
-        }) {
-            Text("verbinden")
+                @Composable { ConnectDialog(documentViewControlState.documentController.value) }
         }
 
-        Button(onClick = {
-            val a = documentViewControlState.documentController.value.state.document.value.toJSON()
-            val b = Json.decodeFromString<Document>(a)
-            println(b.toJSON())
-        }) {
-            Text("connect")
-        }
+
 
     }
 }

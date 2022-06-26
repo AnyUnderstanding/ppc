@@ -12,6 +12,7 @@ class EventTypeAdapter : TypeAdapter<Event> {
         "newPage" -> NewPageEvent::class
         "documentLoad" -> DocumentLoadEvent::class
         "documentRequest" -> DocumentRequestEvent::class
+        "sessionCreated" -> SessionCreatedEvent::class
 
         else -> throw UnkownEventException("Unknown event: $type")
     }

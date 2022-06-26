@@ -36,8 +36,7 @@ var strokePathCache = mutableListOf<Path>()
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PPCCanvas(controller: DocumentController) {
-    val state = controller.state
-    val document = state.document.value
+
     var mousePos by remember { mutableStateOf(Offset(0f, 0f)) }
 
 
@@ -65,7 +64,8 @@ fun PPCCanvas(controller: DocumentController) {
             it.changes.first()
         }
     ) {
-
+        val state = controller.state
+        val document = state.document.value
 
         /*
         drawPage(
@@ -108,7 +108,8 @@ fun PPCCanvas(controller: DocumentController) {
             )
         }
 
-        if (state.documentController.mutexTest.tryLock()) {
+
+            while (!state.documentController.strokeMutex.tryLock()){}
             strokePathCache.clear()
             strokeColor.clear()
 
@@ -159,22 +160,8 @@ fun PPCCanvas(controller: DocumentController) {
 
                 }
             }
-            state.documentController.mutexTest.unlock()
-        } else {
-            println(strokePathCache.size)
-            println("cant lock mutex")
-            strokePathCache.zip(strokeColor).forEach {
-                drawPath(
-                    path = it.first,
-                    color = it.second,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(
-                        width = 1.0F * document.zoomFactor,
-                        cap = StrokeCap.Round
-                    )
-                )
-            }
+            state.documentController.strokeMutex.unlock()
 
-        }
 
 
 
