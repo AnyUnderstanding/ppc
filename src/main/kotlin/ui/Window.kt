@@ -31,10 +31,10 @@ fun <T : WindowControlState> PPCWindow(
 
     Window(
         state = windowState.window,
-        title = "",
-        onCloseRequest = { exit() }
+        title = "PPC",
+        onCloseRequest = { exit() },
+        alwaysOnTop = true,
     ) {
-
         RenderWindow(windowState, controlState)
     }
 }

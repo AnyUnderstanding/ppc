@@ -19,14 +19,12 @@ import util.Point
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.layout.onGloballyPositioned
 import kotlin.math.max
 import kotlin.math.min
 
-// todo: should be moved to the window later on
-var w = 0
-var h = 0
 
-// todo: crash on mousedown without color selected
+var localCenter = Point(0,0)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -35,6 +33,7 @@ fun PPCCanvas(controller: DocumentController) {
     val document = state.document.value
     var mousePos by remember { mutableStateOf(Offset(0f, 0f)) }
 
+    var isRendered = false;
 
 
     Canvas(
@@ -50,9 +49,10 @@ fun PPCCanvas(controller: DocumentController) {
             controller.mouse.inputUp(it.changes.first().position)
 
         }.onSizeChanged {
-            controller.resize(it.width, it.height)
-            w = it.width
-            h = it.height
+//            val nc = Point(it.width/2, it.height * 0.2)
+//            if (nc == localCenter) return@onSizeChanged
+            localCenter = Point(it.width/2, it.height * 0.2)
+            controller.resize(it.width, it.height, localCenter)
         }.onPointerEvent(PointerEventType.Scroll) {
             if (it.keyboardModifiers.isCtrlPressed)
                 controller.mouse.mouseWheelZoom(-it.changes.first().scrollDelta.y / 2)
@@ -61,7 +61,10 @@ fun PPCCanvas(controller: DocumentController) {
             it.changes.first()
         }
     ) {
-
+        if (!isRendered) {
+            isRendered = true
+            controller.onRender()
+        }
         /*
         drawPage(
             Page(pageType = PageType.Blanc, Point(0, 0)),
@@ -151,7 +154,7 @@ fun PPCCanvas(controller: DocumentController) {
 
                 drawPath(
                     path = path,
-                    color = Color(s.color),
+                    color = s.color,
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
                         width = 1.0F * document.zoomFactor,
                         cap = StrokeCap.Round
@@ -274,7 +277,6 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point) {
 
 fun getLocalDrawingOffset(globalPoint: Point, document: Document): Offset {
     val zoomFactor = document.zoomFactor
-    val localCenter = Point(0, 0)
     val delta = localCenter - document.centerPoint.value
     return ((globalPoint + delta) * zoomFactor).toOffset()
 }
@@ -293,7 +295,6 @@ fun getLocalDrawingOffset(globalPoint: Point, document: Document): Offset {
 fun Path.moveTo(offset: Offset) {
     this.moveTo(offset.x, offset.y)
 }
-
 
 fun Path.lineTo(offset: Offset) {
     this.lineTo(offset.x, offset.y)

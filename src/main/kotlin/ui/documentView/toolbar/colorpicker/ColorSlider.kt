@@ -39,7 +39,7 @@ fun ColorSlider(DocumentController: DocumentController) {
     var value by remember { mutableStateOf(0f) }
     var diameter = 15
 
-    var rainbowColors = listOf(
+    val rainbowColors = listOf(
         Color(0xFFFF0000),
         Color(0xFFFF9A00),
         Color(0xFFD0DE21),
@@ -64,8 +64,8 @@ fun ColorSlider(DocumentController: DocumentController) {
         Box(
             modifier = Modifier.clip(RoundedCornerShape(15.dp)).fillMaxWidth(0.5f).background(rainbowBrush)
                 .height(diameter.dp).onGloballyPositioned {
-                width = (it.size.width - it.size.height) // height is equal the diameter of the circle
-            }) {
+                    width = (it.size.width - it.size.height) // height is equal the diameter of the circle
+                }) {
             Box(
                 Modifier
                     .offset { IntOffset(offsetX.roundToInt(), 0) }
@@ -73,11 +73,11 @@ fun ColorSlider(DocumentController: DocumentController) {
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consumeAllChanges()
-                                offsetX += dragAmount.x
-                                if (offsetX > width) offsetX = width.toFloat()
-                                else if (offsetX < 0f) offsetX = 0f
+                            offsetX += dragAmount.x
+                            if (offsetX > width) offsetX = width.toFloat()
+                            else if (offsetX < 0f) offsetX = 0f
 
-                                value = (0.9f * offsetX) / width
+                            value = (0.9f * offsetX) / width
                         }
                     }
             ) {
@@ -86,7 +86,7 @@ fun ColorSlider(DocumentController: DocumentController) {
         }
     }
 
-    DocumentController.setColor(getColorAt(value, rainbowColors).value)
+    DocumentController.setColor(getColorAt(value, rainbowColors))
 
 
 }

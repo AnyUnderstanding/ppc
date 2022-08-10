@@ -13,7 +13,7 @@ import kotlin.streams.toList
 class StrokeController {
     // https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
 
-    var stroke = Stroke(0xFF000000U)
+    var stroke = Stroke()
     val points = ArrayList<Point>()
     private var sampleCount = 0
     private val sampleAfter = 5

@@ -2,6 +2,8 @@ package control
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
 import data.*
 import util.Point
 import kotlin.math.abs
@@ -15,15 +17,20 @@ class DocumentController : Controller {
     var selectedPage: Page? = null
         private set
 
+    var localCenter = Point(0, 0)
+        private set
+
+
 //    private var List<List<Point>>
 
 
-    fun toolDraggedEnded(){
+    fun toolDraggedEnded() {
         when (state.document.value.selectedTool.value) {
             Tool.Pen -> if (selectedPage != null) newStroke()
 
         }
     }
+
     fun toolDragged(point: Point) {
 
         val globalPoint = localCoordsToGlobal(point)
@@ -62,7 +69,12 @@ class DocumentController : Controller {
 
             selection.value!!.selectedStrokes.clear()
             selection.value!!.addStroke(
-                selectedPage!!.strokes.filter { BoundingBox(selection.value!!.start, selection.value!!.end.value!!) in it.mainBoundingBox }
+                selectedPage!!.strokes.filter {
+                    BoundingBox(
+                        selection.value!!.start,
+                        selection.value!!.end.value!!
+                    ) in it.mainBoundingBox
+                }
             )
         }
 
@@ -92,25 +104,25 @@ class DocumentController : Controller {
             // needed to avoid java.util.ConcurrentModificationException
             val erasedStrokes = mutableListOf<Stroke>()
 
-            val eraserBoundingBox = BoundingBox(globalPoint - Point(5,5),globalPoint + Point(5,5))
+            val eraserBoundingBox = BoundingBox(globalPoint - Point(5, 5), globalPoint + Point(5, 5))
 
-                selectedPage?.strokes?.forEach { s ->
-                    if (eraserBoundingBox !in s.mainBoundingBox) return@forEach
+            selectedPage?.strokes?.forEach { s ->
+                if (eraserBoundingBox !in s.mainBoundingBox) return@forEach
 
-                    run bb@{
-                        s.boundingBoxes.forEach { bb ->
-                            if (eraserBoundingBox in bb) {
+                run bb@{
+                    s.boundingBoxes.forEach { bb ->
+                        if (eraserBoundingBox in bb) {
 
-                                if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.document.value.zoomFactor) {
-                                    println((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length)
-                                    erasedStrokes.add(s)
-                                    return@bb
-                                }
-
+                            if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.document.value.zoomFactor) {
+                                println((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length)
+                                erasedStrokes.add(s)
+                                return@bb
                             }
+
                         }
                     }
                 }
+            }
 
             selectedPage?.strokes?.removeAll(erasedStrokes)
 
@@ -145,8 +157,9 @@ class DocumentController : Controller {
         }
     }
 
-    fun resize(newXDim: Int, newYDim: Int) {
+    fun resize(newXDim: Int, newYDim: Int, localCenter: Point) {
         canvasSize = Point(newXDim, newYDim)
+        this.localCenter = localCenter
         println("resize  X: $newXDim  Y: $newYDim")
     }
 
@@ -160,8 +173,8 @@ class DocumentController : Controller {
 
     fun newPage() {
         val document = state.document.value
-        val tp = Point(10, (10 + (document.pageSize.height + 10) * document.pageCount).toDouble())
-        document.newPage(PageType.Ruled, tp)
+
+        document.newPage(PageType.Ruled, Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble()))
     }
 
     fun zoom(zoomDelta: Float, localMousePos: Point) {
@@ -171,18 +184,17 @@ class DocumentController : Controller {
         val newPos = localMousePos * zoomFactor
         val delta = localMousePos * (1 / state.document.value.zoomFactor) - newPos
         val newCenterPoint = state.document.value.centerPoint.value + delta
-        state.document.value.setZoom(zoomDelta, newCenterPoint)
+        state.document.value.updateZoom(zoomDelta, newCenterPoint)
     }
 
-    fun setColor(color: ULong) {
+    fun setColor(color: Color) {
         state.document.value.selectedColor = color
         strokeController.stroke.color = color
     }
 
     private fun localCoordsToGlobal(localPoint: Point): Point {
         val zoomFactor = 1 / state.document.value.zoomFactor
-
-        return localPoint * zoomFactor + state.document.value.centerPoint.value
+        return localPoint * zoomFactor + state.document.value.centerPoint.value - localCenter
     }
 
     fun deleteSelection() {
@@ -190,15 +202,17 @@ class DocumentController : Controller {
         selection.value = null
     }
 
-    fun moveSelection(){
+    fun moveSelection() {
 
         // todo ... fix (:
-        selection.value?.selectedStrokes?.forEach{
-            it.move(Point(30.0,30.0))
+        selection.value?.selectedStrokes?.forEach {
+            it.move(Point(30.0, 30.0))
         }
     }
 
-
+    fun onRender() {
+        newPage()
+    }
 
 
 }
