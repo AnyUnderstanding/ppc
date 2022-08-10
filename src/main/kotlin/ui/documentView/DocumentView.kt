@@ -26,10 +26,9 @@ fun DocumentView(windowState: PPCWindowState, documentViewControlState: Document
     remember { documentViewControlState }
     Box(modifier = Modifier.background(Color(0xFFF8FCFF))) {
             PPCCanvas(documentController)
-        Column {
-        Toolbar(documentViewControlState)
+            Toolbar(documentViewControlState)
             SideBar(documentViewControlState, windowState)
-        }
+
         if (documentController.selection.value != null && documentController.selection.value!!.end.value != null) {
 
             val test = IntOffset(

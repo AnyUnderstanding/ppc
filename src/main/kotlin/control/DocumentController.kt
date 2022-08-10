@@ -174,7 +174,7 @@ class DocumentController : Controller {
     fun newPage() {
         val document = state.document.value
 
-        document.newPage(PageType.Ruled, Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble()))
+        document.newPage(PageType.Isometric, Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble()))
     }
 
     fun zoom(zoomDelta: Float, localMousePos: Point) {

@@ -19,12 +19,10 @@ import util.Point
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.*
-import androidx.compose.ui.layout.onGloballyPositioned
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 
-var localCenter = Point(0,0)
+var localCenter = Point(0, 0)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -51,7 +49,7 @@ fun PPCCanvas(controller: DocumentController) {
         }.onSizeChanged {
 //            val nc = Point(it.width/2, it.height * 0.2)
 //            if (nc == localCenter) return@onSizeChanged
-            localCenter = Point(it.width/2, it.height * 0.2)
+            localCenter = Point(it.width / 2, it.height * 0.2)
             controller.resize(it.width, it.height, localCenter)
         }.onPointerEvent(PointerEventType.Scroll) {
             if (it.keyboardModifiers.isCtrlPressed)
@@ -102,7 +100,8 @@ fun PPCCanvas(controller: DocumentController) {
             drawPage(
                 p,
                 getLocalDrawingOffset(p.topLeft, document),
-                Point(document.pageSize.width.toDouble(), document.pageSize.height.toDouble()) * document.zoomFactor
+                Point(document.pageSize.width.toDouble(), document.pageSize.height.toDouble()) * document.zoomFactor,
+                document
             )
         }
 
@@ -245,7 +244,7 @@ fun PPCCanvas(controller: DocumentController) {
 }
 
 
-fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point) {
+fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document: Document) {
     val path = Path()
     path.addRect(Rect(topLeftPos, Size(pageSize.x.toFloat(), pageSize.y.toFloat())))
 
@@ -260,18 +259,89 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point) {
     drawRect(color = Color.White, topLeft = topLeftPos, size = Size(pageSize.x.toFloat(), pageSize.y.toFloat()))
 
 //    drawLine(Color.Black, topLeftPos, topLeftPos + Offset(0, ))
-
-
     val p = Path()
-    val lineDistance = (pageSize.y / 33).toFloat()
+    val gridSize = 15
+    val horizontalDelta = (pageSize.y / document.pageSize.height) * gridSize
+    var verticalDelta = (pageSize.x / document.pageSize.width) * gridSize
+    var horizontalLines = (pageSize.y / horizontalDelta).roundToInt()
+    var verticalLines = (pageSize.x / verticalDelta).roundToInt()
 
-    p.moveTo(topLeftPos.x, topLeftPos.y + lineDistance * 2)
-    for (i in 0..30) {
-        p.lineTo((topLeftPos.x + pageSize.x).toFloat(), topLeftPos.y + lineDistance * 2 + lineDistance * i)
-        p.moveTo(topLeftPos.x, topLeftPos.y + lineDistance * 2 + lineDistance * (i + 1))
+    when (page.pageType) {
+        PageType.Ruled -> {
+            val lineDistance = (pageSize.y / 33).toFloat()
+
+            p.moveTo(topLeftPos.x, topLeftPos.y + lineDistance * 2)
+            for (i in 0..30) {
+                p.lineTo((topLeftPos.x + pageSize.x).toFloat(), topLeftPos.y + lineDistance * 2 + lineDistance * i)
+                p.moveTo(topLeftPos.x, topLeftPos.y + lineDistance * 2 + lineDistance * (i + 1))
+            }
+
+        }
+
+        PageType.Checkered -> {
+
+
+            for (i in 1 until horizontalLines) {
+                p.moveTo(topLeftPos.x, (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.lineTo((topLeftPos.x + pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
+            }
+
+            for (i in 1 until verticalLines) {
+                p.moveTo((topLeftPos.x + verticalDelta * i).toFloat(), topLeftPos.y)
+                p.lineTo((topLeftPos.x + verticalDelta * i).toFloat(), (topLeftPos.y + pageSize.y).toFloat())
+            }
+        }
+
+        PageType.Dotted -> {
+            for (hi in 1 until horizontalLines) {
+                for (vi in 1 until verticalLines) {
+                    p.moveTo(
+                        (topLeftPos.x + verticalDelta * vi).toFloat(),
+                        (topLeftPos.y + horizontalDelta * hi).toFloat()
+                    )
+                    //p.addOval(Rect(dotSize,dotSize,dotSize,dotSize)) -> Is broken?
+
+                    // temporary fix
+                    p.lineTo(
+                        (topLeftPos.x + verticalDelta * vi).toFloat() + document.zoomFactor,
+                        (topLeftPos.y + horizontalDelta * hi).toFloat() + document.zoomFactor
+                    )
+                }
+            }
+
+
+        }
+
+        PageType.Isometric -> {
+            /*
+
+            for (i in 1 until horizontalLines) {
+
+                val posY1L = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+                val posY2L = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+
+                p.moveTo(topLeftPos.x, (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.lineTo((topLeftPos.x+pageSize.x).toFloat(), posY1L.toFloat())
+
+                p.moveTo(topLeftPos.x, (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.lineTo((topLeftPos.x+pageSize.x).toFloat(), posY2L.toFloat())
+
+                val posY1R = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+                val posY2R = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+
+                p.moveTo((topLeftPos.x+pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.lineTo(topLeftPos.x, posY1R.toFloat())
+
+                p.moveTo((topLeftPos.x+pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.lineTo(topLeftPos.x, posY2R.toFloat())
+
+            }*/
+        }
+        PageType.Blanc->{/* Nothing to do */}
+
     }
-
     drawPath(path = p, color = Color.DarkGray, style = androidx.compose.ui.graphics.drawscope.Stroke())
+
 }
 
 
