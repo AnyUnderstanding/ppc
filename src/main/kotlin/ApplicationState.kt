@@ -8,9 +8,7 @@ import data.DocumentInformation
 import data.DocumentInformationType
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.encodeToByteArray
-import ui.documentView.DocumentView
 import java.io.File
-import java.util.StringJoiner
 
 @Composable
 fun rememberApplicationState() = remember {
@@ -43,26 +41,45 @@ class ApplicationState {
         )
     }
 
-    fun loadDocumentInformation(path: String = workingDirectoryPath): List<DocumentInformation> {
+    fun loadDocumentInformation(path: String = workingDirectoryPath, depth: Int = 3): List<DocumentInformation> {
         val folders = mutableListOf<DocumentInformation>()
         File(path).listFiles()?.forEach {
             if (it.isDirectory) {
                 folders.add(
                     DocumentInformation(
                         it.name,
-                        DocumentInformationType.Folder
+                        DocumentInformationType.Folder,
+                        it.path
                     )
                 )
             }
         }
+
+        addChildrenToFolder(folders, depth - 1)
+
+        return folders
+    }
+
+    fun addChildrenToFolder(folders: List<DocumentInformation>, remainingDepth: Int){
         folders.forEach {
-            File(workingDirectoryPath+it.name).listFiles()?.forEach { file ->
-                if (file.isFile && file.name.endsWith(".ppc")) {
-                    it.children.add(DocumentInformation(file.name.substringBefore('.'), DocumentInformationType.Document))
+            if (it.type == DocumentInformationType.Folder) {
+
+                File(it.path).listFiles()?.forEach { file ->
+                    if (file.isFile && file.name.endsWith(".ppc")) {
+                        it.children.add(
+                            DocumentInformation(
+                                file.name.substringBefore('.'),
+                                DocumentInformationType.Document,
+                                file.path
+                            )
+                        )
+                    } else if (file.isDirectory) {
+                        it.children.add(DocumentInformation(file.name, DocumentInformationType.Folder, file.path))
+                    }
                 }
+                if (remainingDepth > 0) addChildrenToFolder(it.children, remainingDepth - 1)
             }
         }
-        return folders
     }
 
     fun newFolder(name: String) {

@@ -164,7 +164,7 @@ fun PPCCanvas(controller: DocumentController) {
             }
         }
 
-        when (state.document.value.selectedTool.value) {
+        when (state.documentController.selectedTool.value) {
             Tool.Eraser -> drawCircle(
                 color = Color(0xAA9C9C9C),
                 center = mousePos,
@@ -338,6 +338,9 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
             }*/
         }
         PageType.Blanc->{/* Nothing to do */}
+
+        else -> {}
+
 
     }
     drawPath(path = p, color = Color.DarkGray, style = androidx.compose.ui.graphics.drawscope.Stroke())

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.IntOffset
 import data.DocumentViewControlState
 import ui.PPCCanvas
 import ui.PPCWindowState
-import ui.documentView.toolbar.SideBar
+import ui.documentView.sidebar.SideBar
 import ui.documentView.toolbar.ToolDialog
 import ui.documentView.toolbar.Toolbar
 
@@ -41,16 +41,14 @@ fun DocumentView(windowState: PPCWindowState, documentViewControlState: Document
         }
 
         documentViewControlState.activeDialog.value?.let {
-            ToolDialog(documentViewControlState, "title") {
-                it(
+            val x = it.first
+            ToolDialog(documentViewControlState, it.second) {
+                x(
                     documentController
                 )
             }
         }
-
     }
-
-
 }
 
 

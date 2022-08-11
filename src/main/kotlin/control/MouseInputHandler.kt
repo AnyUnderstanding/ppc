@@ -20,7 +20,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         if (!mouseDraged) {
             documentController.toolClicked()
         }
-        if (documentController.state.document.value.selectedTool.value == Tool.Pen) {
+        if (documentController.selectedTool.value == Tool.Pen) {
             if (documentController.selectedPage != null) {
                 documentController.newStroke()
             }

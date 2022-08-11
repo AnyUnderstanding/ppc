@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 
 // when to load images -> loading images with every recompose is probably bad
 @Composable
-fun IconButton(isActivated: Boolean, iconPath: String,size: Dp = 40.dp, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun IconButton(isActivated: Boolean, iconPath: String,size: Dp = 40.dp, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(

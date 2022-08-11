@@ -4,7 +4,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.window.Dialog
 import data.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
 import util.Point
 import kotlin.math.abs
 
@@ -20,13 +25,17 @@ class DocumentController : Controller {
     var localCenter = Point(0, 0)
         private set
 
+    var selectedTool = mutableStateOf(Tool.Pen)
+    var selectedColor: Color = Color.Red
+
 
 //    private var List<List<Point>>
 
 
     fun toolDraggedEnded() {
-        when (state.document.value.selectedTool.value) {
+        when (selectedTool.value) {
             Tool.Pen -> if (selectedPage != null) newStroke()
+            else -> {}
 
         }
     }
@@ -35,7 +44,7 @@ class DocumentController : Controller {
 
         val globalPoint = localCoordsToGlobal(point)
 
-        when (state.document.value.selectedTool.value) {
+        when (selectedTool.value) {
             Tool.Pen -> strokeAddPoint(globalPoint)
             Tool.Eraser -> eraserMoved(globalPoint)
             Tool.Selector -> selectorMoved(globalPoint)
@@ -44,10 +53,11 @@ class DocumentController : Controller {
     }
 
     fun toolClicked() {
-        when (state.document.value.selectedTool.value) {
+        when (selectedTool.value) {
             Tool.Selector -> {
                 selection.value = null
             }
+            else -> {}
         }
 
     }
@@ -132,7 +142,7 @@ class DocumentController : Controller {
     }
 
     fun newStroke() {
-        val stroke = selectedPage?.newStroke(state.document.value.selectedColor)
+        val stroke = selectedPage?.newStroke(selectedColor)
         if (stroke != null)
             strokeController.newStroke(stroke)
 
@@ -174,7 +184,10 @@ class DocumentController : Controller {
     fun newPage() {
         val document = state.document.value
 
-        document.newPage(PageType.Isometric, Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble()))
+        document.newPage(
+            PageType.Checkered,
+            Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble())
+        )
     }
 
     fun zoom(zoomDelta: Float, localMousePos: Point) {
@@ -188,7 +201,7 @@ class DocumentController : Controller {
     }
 
     fun setColor(color: Color) {
-        state.document.value.selectedColor = color
+        selectedColor = color
         strokeController.stroke.color = color
     }
 
@@ -210,9 +223,20 @@ class DocumentController : Controller {
         }
     }
 
-    fun onRender() {
-        newPage()
+    @OptIn(ExperimentalSerializationApi::class)
+    fun docToBytes(): ByteArray = Cbor.encodeToByteArray(state.document.value)
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun loadDocFromBytes(bytes: ByteArray) {
+        try {
+            state.document.value = Cbor.decodeFromByteArray(bytes)
+        } catch (e: Exception) {
+            println("Could not open file: $e")
+        }
     }
 
-
+    fun onRender() {
+        if (state.document.value.pages.size == 0)
+            newPage()
+    }
 }

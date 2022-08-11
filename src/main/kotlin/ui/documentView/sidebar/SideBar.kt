@@ -1,17 +1,16 @@
-package ui.documentView.toolbar
+package ui.documentView.sidebar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
@@ -21,9 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -32,10 +28,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import data.DocumentInformation
+import data.DocumentInformationType
 import data.DocumentViewControlState
-import kotlinx.coroutines.flow.first
 import ui.PPCWindowState
-import kotlin.math.exp
+import ui.documentView.toolbar.IconButton
 
 
 private val RegisterShape = GenericShape { size, _ ->
@@ -52,9 +48,11 @@ private val RegisterShape = GenericShape { size, _ ->
 //    lineTo(0f, 0f)
 //}
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
 fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPCWindowState) {
     val expanded = remember { mutableStateOf(false) }
+    // Box(modifier = Modifier.fillMaxSize().clickable { documentViewControlState.sideBarActivated.value = false })
     Surface(
         modifier = Modifier.fillMaxHeight().background(Color(0xFF00FF00))
             .fillMaxWidth(0.2f + (if (expanded.value) 0.2f else 0f))
@@ -70,22 +68,39 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
                 Column(Modifier.fillMaxWidth(if (expanded.value) 0.5f else 1f)) {
                     folders.forEachIndexed { i, it ->
 
-                        (Register(
-                            it.name,
+                        Register(
+                            it,
                             Color.Red,
-                            documentViewControlState.loadedDoc.value == it.name,
+                            documentViewControlState.loadedDoc.value.workbook.value?.name == it.name,
                             it.children,
                             documentViewControlState,
                             expanded
-                        ))
+                        )
+
+
                     }
+
                 }
 
                 if (expanded.value) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight()
+                        modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight().fillMaxWidth()
                             .drawBehind { drawLine(Color(0xFFE9E9E9), Offset(0f, 0f), Offset(0f, size.height), 3f) }) {
-                        Text("lars", modifier = Modifier.padding(vertical = 10.dp))
+                        documentViewControlState.loadedDoc.value.folder.value?.children?.forEach {
+
+                            Row(Modifier.fillMaxWidth().clickable {
+                                expanded.value = true
+                            }.fillMaxWidth()) {
+                                Text(
+                                    text = it.name,
+                                    modifier = Modifier.padding(30.dp, 10.dp),
+                                    fontSize = TextUnit(1f, TextUnitType.Em),
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF6B6B6B)
+                                )
+
+                            }
+                        }
                     }
                 }
             }
@@ -96,7 +111,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun Register(
-    name: String,
+    doc: DocumentInformation,
     color: Color,
     activated: Boolean = false,
     children: MutableList<DocumentInformation>,
@@ -111,7 +126,7 @@ fun Register(
             interactionSource = remember { MutableInteractionSource() },
             indication = rememberRipple(color = color)
         ) {
-            documentViewControlState.loadedDoc.value = name
+            documentViewControlState.loadedDoc.value.workbook.value = doc
             expanded.value = false
         }
 
@@ -122,7 +137,7 @@ fun Register(
         )
         Text(
             modifier = Modifier.height(height).padding(horizontal = 10.dp),
-            text = name,
+            text = doc.name,
             fontWeight = FontWeight.SemiBold,
             fontSize = TextUnit(1.3f, TextUnitType.Em),
             textAlign = TextAlign.Center,
@@ -130,9 +145,23 @@ fun Register(
         )
     }
     if (activated) {
+
         children.forEach {
-            Row(Modifier.fillMaxWidth().clickable { expanded.value = true }) {
-                Text(text = it.name)
+            Row(Modifier.fillMaxWidth().clickable {
+                expanded.value = true
+                documentViewControlState.loadedDoc.value.folder.value = it
+
+            }) {
+
+                Text(
+                    text = it.name,
+                    modifier = Modifier.padding(30.dp, 10.dp),
+                    fontSize = TextUnit(1f, TextUnitType.Em),
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF6B6B6B)
+                )
+                if (it.type == DocumentInformationType.Folder) Icon(Icons.Filled.KeyboardArrowDown, "")
+
             }
         }
     }
@@ -145,10 +174,12 @@ fun HeadBar(documentViewControlState: DocumentViewControlState) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         SearchBar()
-        Row(modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End) {
-        IconButton(false,"newFile.svg"){}
-        IconButton(false,"backArrow.svg"){documentViewControlState.sideBarActivated.value = false}
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(false, "newFile.svg")
+            IconButton(false, "leftArrow.svg") { documentViewControlState.sideBarActivated.value = false }
         }
     }
 }
@@ -165,12 +196,19 @@ fun SearchBar() {
         interactionSource = intSource,
         onValueChange = {
             value.value = it
-
         },
         singleLine = true,
         decorationBox = { innerTextField ->
-            Row(modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC)).clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Search, "", tint = Color(/*if (focused.value) 0xFF13C6FF else*/ 0xFF6B6B6B), modifier = Modifier.padding(5.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC))
+                    .clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Search,
+                    "",
+                    tint = Color(/*if (focused.value) 0xFF13C6FF else*/ 0xFF6B6B6B),
+                    modifier = Modifier.padding(5.dp)
+                )
                 innerTextField()
             }
         }

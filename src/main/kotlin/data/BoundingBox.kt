@@ -4,7 +4,7 @@ import androidx.compose.runtime.MutableState
 import util.Point
 import kotlin.math.abs
 
-
+@kotlinx.serialization.Serializable
 data class BoundingBox(val point0: Point, val point1: Point) {
     val left by lazy { if (point0.x <= point1.x) point0.x else point1.x }
     val right by lazy { if (point0.x >= point1.x) point0.x else point1.x }

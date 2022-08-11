@@ -2,6 +2,9 @@ package data
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
+import data.serializer.ColorSerializer
+import data.serializer.SnapshotListSerializer
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import util.Point
@@ -10,18 +13,25 @@ import util.Point
 
 //todo: color serialization
 // todo: currently the strokes get created on mouserelease therefore the color must be set after initialization -> change in future to create on mouse press
-class Stroke(@Transient var color: Color = Color.Red) {
+class Stroke() {
     @Serializable(with = SnapshotListSerializer::class)
     val spline = mutableStateListOf<Point>()
 
     @Serializable(with = SnapshotListSerializer::class)
     val pendingPoints = mutableStateListOf<Point>()
 
-    @Transient
+    @Serializable
     val boundingBoxes = mutableListOf<BoundingBox>()
 
-    @Transient
+    @Serializable
     var mainBoundingBox = BoundingBox(Point(0.0, 0.0), Point(0.0, 0.0))
+
+    @Serializable(with = ColorSerializer::class)
+    var color: Color = Color.Red
+
+    constructor(pcolor: Color) : this() {
+        color = pcolor
+    }
 
 
     fun isEmpty() = spline.isEmpty() && pendingPoints.isEmpty()
