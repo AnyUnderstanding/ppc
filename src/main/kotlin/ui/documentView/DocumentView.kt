@@ -27,6 +27,8 @@ fun DocumentView(windowState: PPCWindowState, documentViewControlState: Document
     Box(modifier = Modifier.background(Color(0xFFF8FCFF))) {
             PPCCanvas(documentController)
             Toolbar(documentViewControlState)
+
+        if (documentViewControlState.sideBarActivated.value)
             SideBar(documentViewControlState, windowState)
 
         if (documentController.selection.value != null && documentController.selection.value!!.end.value != null) {

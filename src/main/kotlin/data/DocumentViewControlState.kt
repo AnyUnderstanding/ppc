@@ -9,4 +9,5 @@ class DocumentViewControlState(docCon: DocumentController) : WindowControlState 
     var activeDialog: MutableState<(@Composable (DocumentController) -> Unit)?> = mutableStateOf(null)
     val documentController = mutableStateOf(docCon)
     var loadedDoc = mutableStateOf("")
+    var sideBarActivated = mutableStateOf(false)
 }

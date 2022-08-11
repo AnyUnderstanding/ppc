@@ -65,7 +65,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
         // folder
 
         Column(Modifier.background(Color.White).fillMaxWidth()) {
-            HeadBar()
+            HeadBar(documentViewControlState)
             Row {
                 Column(Modifier.fillMaxWidth(if (expanded.value) 0.5f else 1f)) {
                     folders.forEachIndexed { i, it ->
@@ -139,12 +139,17 @@ fun Register(
 }
 
 @Composable
-fun HeadBar() {
+fun HeadBar(documentViewControlState: DocumentViewControlState) {
     Row(
-        Modifier.background(Color(0xFFE9E9E9)).height(70.dp).fillMaxWidth(),
+        Modifier.background(Color(0xFFE9E9E9)).height(70.dp).fillMaxWidth().padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SearchBar()
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End) {
+        IconButton(false,"newFile.svg"){}
+        IconButton(false,"backArrow.svg"){documentViewControlState.sideBarActivated.value = false}
+        }
     }
 }
 
@@ -153,17 +158,10 @@ fun SearchBar() {
     val value = remember { mutableStateOf(TextFieldValue()) }
     val intSource = remember { MutableInteractionSource() }
     val focused = intSource.collectIsFocusedAsState()
-    val focusManager = LocalFocusManager.current
 
-    TextField(        value = value.value,
-        onValueChange = {
-            value.value = it
-
-        }
-    )
     BasicTextField(
         value = value.value,
-        modifier = Modifier.fillMaxWidth(0.7f).fillMaxHeight(0.6f).clip(RoundedCornerShape(10.dp)),
+        modifier = Modifier.fillMaxWidth(0.6f).fillMaxHeight(0.75f).clip(RoundedCornerShape(15.dp)),
         interactionSource = intSource,
         onValueChange = {
             value.value = it
@@ -172,7 +170,7 @@ fun SearchBar() {
         singleLine = true,
         decorationBox = { innerTextField ->
             Row(modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC)).clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Search, "", tint = Color(if (focused.value) 0xFF13C6FF else 0xFF6E6E6E))
+                Icon(Icons.Filled.Search, "", tint = Color(/*if (focused.value) 0xFF13C6FF else*/ 0xFF6B6B6B), modifier = Modifier.padding(5.dp))
                 innerTextField()
             }
         }

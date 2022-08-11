@@ -18,7 +18,7 @@ fun Toolbar(documentViewControlState: DocumentViewControlState) {
     val tabIndex = remember { mutableStateOf(0) }
 
     Column(modifier = Modifier.fillMaxWidth().background(Color(0xFFF0F0F0))) {
-        ToolbarTabSelect(tabIndex)
+        ToolbarTabSelect(tabIndex, documentViewControlState)
         tabs[tabIndex.value](documentViewControlState)
     }
 }
