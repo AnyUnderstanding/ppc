@@ -29,12 +29,14 @@ class DocumentController : Controller {
     var selectedColor: Color = Color.Red
 
 
+
 //    private var List<List<Point>>
 
 
     fun toolDraggedEnded() {
         when (selectedTool.value) {
             Tool.Pen -> if (selectedPage != null) newStroke()
+            Tool.Selector -> selection.value?.selectionComplete = true
             else -> {}
 
         }
@@ -53,12 +55,6 @@ class DocumentController : Controller {
     }
 
     fun toolClicked() {
-        when (selectedTool.value) {
-            Tool.Selector -> {
-                selection.value = null
-            }
-            else -> {}
-        }
 
     }
 
@@ -185,7 +181,7 @@ class DocumentController : Controller {
         val document = state.document.value
 
         document.newPage(
-            PageType.Checkered,
+            PageType.Dotted,
             Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble())
         )
     }
@@ -238,5 +234,15 @@ class DocumentController : Controller {
     fun onRender() {
         if (state.document.value.pages.size == 0)
             newPage()
+    }
+
+    fun inputDown() {
+        when (selectedTool.value) {
+            Tool.Selector -> {
+                if (selection.value?.selectionComplete!!)
+                    selection.value = null
+            }
+            else -> {}
+        }
     }
 }

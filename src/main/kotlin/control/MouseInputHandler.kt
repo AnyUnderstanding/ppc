@@ -57,6 +57,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         isPressed = true
         mousePos = Point(position.x.toDouble(), position.y.toDouble())
         documentController.toolDragged(mousePos)
+        documentController.inputDown()
 
     }
 

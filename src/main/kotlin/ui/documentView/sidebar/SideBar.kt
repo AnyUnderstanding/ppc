@@ -27,9 +27,7 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import data.DocumentInformation
-import data.DocumentInformationType
-import data.DocumentViewControlState
+import data.*
 import ui.PPCWindowState
 import ui.documentView.toolbar.IconButton
 
@@ -59,14 +57,14 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
     ) {
         var activatedRegister by remember { mutableStateOf(-1) }
 
-        val folders = windowState.application.loadDocumentInformation()
+//        val folders = windowState.folders
         // folder
 
         Column(Modifier.background(Color.White).fillMaxWidth()) {
             HeadBar(documentViewControlState)
             Row {
                 Column(Modifier.fillMaxWidth(if (expanded.value) 0.5f else 1f)) {
-                    folders.forEachIndexed { i, it ->
+                    windowState.folders.value.forEachIndexed { i, it ->
 
                         Register(
                             it,
@@ -74,12 +72,11 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
                             documentViewControlState.loadedDoc.value.workbook.value?.name == it.name,
                             it.children,
                             documentViewControlState,
-                            expanded
+                            expanded,
+                            windowState
                         )
-
-
                     }
-
+                    AddButton(windowState, null)
                 }
 
                 if (expanded.value) {
@@ -101,6 +98,8 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
 
                             }
                         }
+                        AddButton(windowState, documentViewControlState.loadedDoc.value.folder.value, true)
+
                     }
                 }
             }
@@ -117,6 +116,7 @@ fun Register(
     children: MutableList<DocumentInformation>,
     documentViewControlState: DocumentViewControlState,
     expanded: MutableState<Boolean>,
+    windowState: PPCWindowState
 ) {
     val height = 30.dp
     val lightColor = color.copy(alpha = 0.15f)
@@ -145,14 +145,11 @@ fun Register(
         )
     }
     if (activated) {
-
         children.forEach {
             Row(Modifier.fillMaxWidth().clickable {
                 expanded.value = true
                 documentViewControlState.loadedDoc.value.folder.value = it
-
             }) {
-
                 Text(
                     text = it.name,
                     modifier = Modifier.padding(30.dp, 10.dp),
@@ -161,9 +158,10 @@ fun Register(
                     color = Color(0xFF6B6B6B)
                 )
                 if (it.type == DocumentInformationType.Folder) Icon(Icons.Filled.KeyboardArrowDown, "")
-
             }
         }
+
+        AddButton(windowState, doc)
     }
 }
 
@@ -213,4 +211,23 @@ fun SearchBar() {
             }
         }
     )
+}
+
+
+@Composable
+fun AddButton(
+    windowState: PPCWindowState,
+    parent: DocumentInformation?,
+    file: Boolean = false
+) {
+    Button({
+        val charset = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        val t = List(20) { charset.random() }.joinToString("")
+        if (file) windowState.application.newFile(parent, t)
+        else windowState.application.newFolder(parent, t)
+
+        windowState.updateDocs()
+    }) {
+        Text("Add")
+    }
 }

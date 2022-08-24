@@ -11,10 +11,10 @@ class Selection(var start: Point) {
         get() = field
 
     var end: MutableState<Point?> = mutableStateOf(null)
-
     var selectedStrokes = mutableListOf<Stroke>()
-
     var strokeBoundingBox: BoundingBox? = null
+    var selectionComplete = false
+
 
 
     fun addStroke(strokes: List<Stroke>) {
@@ -22,7 +22,7 @@ class Selection(var start: Point) {
         selectedStrokes.clear()
         selectedStrokes.addAll(strokes)
 //        println("ss: ${selectedStrokes.size}")
-        if (strokes.isEmpty()) {
+        if (strokes.isEmpty() || start == end.value) {
             strokeBoundingBox = null
             return
         }

@@ -1,14 +1,14 @@
 import androidx.compose.runtime.Composable
-import data.Settings
 import ui.PPCWindowState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import data.Document
-import data.DocumentInformation
-import data.DocumentInformationType
+import data.*
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.encodeToByteArray
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectory
+import kotlin.io.path.createFile
 
 @Composable
 fun rememberApplicationState() = remember {
@@ -60,7 +60,7 @@ class ApplicationState {
         return folders
     }
 
-    fun addChildrenToFolder(folders: List<DocumentInformation>, remainingDepth: Int){
+    fun addChildrenToFolder(folders: List<DocumentInformation>, remainingDepth: Int) {
         folders.forEach {
             if (it.type == DocumentInformationType.Folder) {
 
@@ -82,8 +82,14 @@ class ApplicationState {
         }
     }
 
-    fun newFolder(name: String) {
-        File(workingDirectoryPath + name).createNewFile()
+    fun newFolder(doc: DocumentInformation?, name: String) {
+        val parentPath = doc?.path ?: workingDirectoryPath
+        Path(parentPath, name).createDirectory()
+    }
+
+    fun newFile(doc: DocumentInformation?, name: String) {
+        val parentPath = doc?.path ?: workingDirectoryPath
+        Path(parentPath, "$name.ppc").createFile()
     }
 
     suspend fun exit() {

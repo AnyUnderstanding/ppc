@@ -260,7 +260,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
 
 //    drawLine(Color.Black, topLeftPos, topLeftPos + Offset(0, ))
     val p = Path()
-    val gridSize = 15
+    val gridSize = 30
     val horizontalDelta = (pageSize.y / document.pageSize.height) * gridSize
     var verticalDelta = (pageSize.x / document.pageSize.width) * gridSize
     var horizontalLines = (pageSize.y / horizontalDelta).roundToInt()
@@ -313,7 +313,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
         }
 
         PageType.Isometric -> {
-            /*
+
 
             for (i in 1 until horizontalLines) {
 
@@ -335,7 +335,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
                 p.moveTo((topLeftPos.x+pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
                 p.lineTo(topLeftPos.x, posY2R.toFloat())
 
-            }*/
+            }
         }
         PageType.Blanc->{/* Nothing to do */}
 
