@@ -168,13 +168,13 @@ fun PPCCanvas(controller: DocumentController) {
             Tool.Eraser -> drawCircle(
                 color = Color(0xAA9C9C9C),
                 center = mousePos,
-                radius = 10.0F * document.zoomFactor
+                radius = 10.0F
             )
 
             Tool.Pen -> drawCircle(
                 color = Color(0xFF9C9C9C),
                 center = mousePos,
-                radius = 3.0F * document.zoomFactor
+                radius = 3.0F
             )
 
             Tool.Selector -> {
@@ -212,7 +212,7 @@ fun PPCCanvas(controller: DocumentController) {
                         path = strokeBoundingPath,
                         color = Color(0xAA7B7B7B),
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
-                            width = 1.5F * document.zoomFactor,
+                            width = 1.5F,
                             cap = StrokeCap.Round,
                             pathEffect = PathEffect.dashPathEffect(
                                 floatArrayOf(
@@ -227,12 +227,12 @@ fun PPCCanvas(controller: DocumentController) {
                         path = selectionPath,
                         color = Color(0xAA7B7B7B),
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
-                            width = 1.5F * document.zoomFactor,
+                            width = 1.5F,
                             cap = StrokeCap.Round,
                             pathEffect = PathEffect.dashPathEffect(
                                 floatArrayOf(
-                                    10F * document.zoomFactor,
-                                    10F * document.zoomFactor
+                                    10F  * document.zoomFactor,
+                                    10F  * document.zoomFactor
                                 ), 00F
                             )
                         )
