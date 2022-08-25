@@ -1,14 +1,13 @@
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import ui.PPCWindowState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import data.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import java.io.File
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectory
-import kotlin.io.path.createFile
+import java.nio.file.Path
+import kotlin.io.path.*
 
 @Composable
 fun rememberApplicationState() = remember {
@@ -18,30 +17,42 @@ fun rememberApplicationState() = remember {
 }
 
 class ApplicationState {
-    val workingDirectoryPath = System.getProperty("user.home") + "/ppc/"
+
 
     val settings = Settings()
 
     private val _windows = mutableStateListOf<PPCWindowState>()
     val windows: List<PPCWindowState> get() = _windows
+    private val workingDirectoryPath = System.getProperty("user.home") + "/ppc/"
 
-    fun newWindow() {
-        // TODO: New Window
-        _windows.add(
-            PPCWindowState(
-                application = this,
-                exit = _windows::remove,
-            )
-        )
-    }
-
-    fun saveDocument(document: Document, name: String) {
-        File(workingDirectoryPath + name).writeBytes(
+    fun saveDocument(document: Document, path: Path) {
+        path.writeBytes(
             Cbor.encodeToByteArray(document)
         )
     }
 
-    fun loadDocumentInformation(path: String = workingDirectoryPath, depth: Int = 3): List<DocumentInformation> {
+    fun loadDocument(docInfo: DocumentInformation): Document? {
+        return loadDocument(Path.of(docInfo.path))
+    }
+
+
+
+    fun loadDocument(docPath: Path): Document? {
+        return try {
+            val file = docPath.readBytes()
+            Cbor.decodeFromByteArray<Document>(file)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
+    fun loadDocumentInformation(
+        path: String = workingDirectoryPath,
+        depth: Int = 3,
+        loadedDoc: LoadedDoc
+    ): List<DocumentInformation> {
         val folders = mutableListOf<DocumentInformation>()
         File(path).listFiles()?.forEach {
             if (it.isDirectory) {
@@ -57,6 +68,7 @@ class ApplicationState {
 
         addChildrenToFolder(folders, depth - 1)
 
+        updateLoadedDoc(folders, loadedDoc)
         return folders
     }
 
@@ -82,14 +94,38 @@ class ApplicationState {
         }
     }
 
+    private fun updateLoadedDoc(folders: List<DocumentInformation>, loadedDoc: LoadedDoc) {
+        loadedDoc.workbook.value = folders.firstOrNull {
+            it.path == loadedDoc.workbook.value?.path
+        }
+        loadedDoc.folder.value = loadedDoc.workbook.value?.children?.firstOrNull {
+            it.path == loadedDoc.folder.value?.path
+        }
+
+    }
+
     fun newFolder(doc: DocumentInformation?, name: String) {
         val parentPath = doc?.path ?: workingDirectoryPath
-        Path(parentPath, name).createDirectory()
+        runCatching {
+            Path(parentPath, name).createDirectory()
+        }
     }
 
     fun newFile(doc: DocumentInformation?, name: String) {
         val parentPath = doc?.path ?: workingDirectoryPath
-        Path(parentPath, "$name.ppc").createFile()
+        runCatching {
+            Path(parentPath, "$name.ppc").createFile()
+        }
+    }
+
+    fun newWindow() {
+        // TODO: New Window
+        _windows.add(
+            PPCWindowState(
+                application = this,
+                exit = _windows::remove
+            )
+        )
     }
 
     suspend fun exit() {
@@ -102,3 +138,5 @@ class ApplicationState {
     }
 
 }
+
+

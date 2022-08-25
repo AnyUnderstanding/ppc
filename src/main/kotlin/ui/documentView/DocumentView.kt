@@ -33,7 +33,7 @@ fun DocumentView(windowState: PPCWindowState, documentViewControlState: Document
             SideBar(documentViewControlState, windowState)
 
         if (documentController.selection.value != null && documentController.selection.value!!.end.value != documentController.selection.value!!.start) {
-            val localOffset = getLocalDrawingOffset(documentController.selection.value!!.end.value!!, documentController.state.document.value)
+            val localOffset = getLocalDrawingOffset(documentController.selection.value!!.end.value!!, documentController.state.value.document.value)
             val test = IntOffset(
                 localOffset.x.toInt(),
                 localOffset.y.toInt()

@@ -13,9 +13,10 @@ import kotlinx.serialization.encodeToByteArray
 import util.Point
 import kotlin.math.abs
 
-class DocumentController : Controller {
+class DocumentController(document: Document) : Controller {
     val mouse = MouseInputHandler(this)
-    val state: DocumentControlState = DocumentControlState(this, Document(PageSize.A4))
+    val state = mutableStateOf( DocumentControlState(this, document))
+
     val strokeController = StrokeController()
     private var canvasSize = Point(0, 0)
     var selection: MutableState<Selection?> = mutableStateOf(null)
@@ -30,7 +31,6 @@ class DocumentController : Controller {
 
 
 
-//    private var List<List<Point>>
 
 
     fun toolDraggedEnded() {
@@ -119,7 +119,7 @@ class DocumentController : Controller {
                     s.boundingBoxes.forEach { bb ->
                         if (eraserBoundingBox in bb) {
 
-                            if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.document.value.zoomFactor) {
+                            if ((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length < 10f * state.value.document.value.zoomFactor) {
                                 println((abs((globalPoint - bb.point0).cross(bb.point1 - bb.point0))) / (bb.point1 - bb.point0).length)
                                 erasedStrokes.add(s)
                                 return@bb
@@ -146,7 +146,7 @@ class DocumentController : Controller {
 
 //    fun newStroke() {
 //        val stroke = Stroke()
-//        //state.strokes.add(stroke)
+//        //state.value.strokes.add(stroke)
 //       // strokeController.newStroke(stroke)
 //
 //    }
@@ -154,9 +154,9 @@ class DocumentController : Controller {
     fun getPageByPoint(point: Point): Page? {
 
         return try {
-            state.document.value.pages.first {
-                point.x in it.topLeft.x..(it.topLeft.x + state.document.value.pageSize.width) &&
-                        point.y in it.topLeft.y..(it.topLeft.y + state.document.value.pageSize.height)
+            state.value.document.value.pages.first {
+                point.x in it.topLeft.x..(it.topLeft.x + state.value.document.value.pageSize.width) &&
+                        point.y in it.topLeft.y..(it.topLeft.y + state.value.document.value.pageSize.height)
             }
         } catch (e: NoSuchElementException) {
             null
@@ -166,19 +166,25 @@ class DocumentController : Controller {
     fun resize(newXDim: Int, newYDim: Int, localCenter: Point) {
         canvasSize = Point(newXDim, newYDim)
         this.localCenter = localCenter
-        println("resize  X: $newXDim  Y: $newYDim")
     }
 
     fun scrollY(scrollDelta: Float) {
-        if (state.document.value.scrollY + scrollDelta < 0) return
-        state.document.value.centerPoint.value += Point(0, scrollDelta.toDouble())
-        state.document.value.scrollY += scrollDelta
-        println(state.document.value.centerPoint.value)
+        if (state.value.document.value.scrollY + scrollDelta < 0) return
+        state.value.document.value.centerPoint.value += Point(0, scrollDelta.toDouble())
+        state.value.document.value.scrollY += scrollDelta
+        println(state.value.document.value.centerPoint.value)
+
+    }
+
+    fun scrollX(scrollDelta: Float) {
+        println("X: $scrollDelta")
+        state.value.document.value.centerPoint.value += Point(scrollDelta.toDouble(), 0)
+        state.value.document.value.scrollX += scrollDelta
 
     }
 
     fun newPage() {
-        val document = state.document.value
+        val document = state.value.document.value
 
         document.newPage(
             PageType.Dotted,
@@ -187,13 +193,13 @@ class DocumentController : Controller {
     }
 
     fun zoom(zoomDelta: Float, localMousePos: Point) {
-        if (state.document.value.zoomFactor + zoomDelta <= 0) return
+        if (state.value.document.value.zoomFactor + zoomDelta <= 0) return
 
-        val zoomFactor = 1 / (state.document.value.zoomFactor + zoomDelta)
+        val zoomFactor = 1 / (state.value.document.value.zoomFactor + zoomDelta)
         val newPos = localMousePos * zoomFactor
-        val delta = localMousePos * (1 / state.document.value.zoomFactor) - newPos
-        val newCenterPoint = state.document.value.centerPoint.value + delta
-        state.document.value.updateZoom(zoomDelta, newCenterPoint)
+        val delta = localMousePos * (1 / state.value.document.value.zoomFactor) - newPos
+        val newCenterPoint = state.value.document.value.centerPoint.value + delta
+        state.value.document.value.updateZoom(zoomDelta, newCenterPoint)
     }
 
     fun setColor(color: Color) {
@@ -202,8 +208,8 @@ class DocumentController : Controller {
     }
 
     private fun localCoordsToGlobal(localPoint: Point): Point {
-        val zoomFactor = 1 / state.document.value.zoomFactor
-        return localPoint * zoomFactor + state.document.value.centerPoint.value - localCenter
+        val zoomFactor = 1 / state.value.document.value.zoomFactor
+        return localPoint * zoomFactor + state.value.document.value.centerPoint.value - localCenter
     }
 
     fun deleteSelection() {
@@ -220,19 +226,19 @@ class DocumentController : Controller {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun docToBytes(): ByteArray = Cbor.encodeToByteArray(state.document.value)
+    fun docToBytes(): ByteArray = Cbor.encodeToByteArray(state.value.document.value)
 
     @OptIn(ExperimentalSerializationApi::class)
     fun loadDocFromBytes(bytes: ByteArray) {
         try {
-            state.document.value = Cbor.decodeFromByteArray(bytes)
+            state.value.document.value = Cbor.decodeFromByteArray(bytes)
         } catch (e: Exception) {
             println("Could not open file: $e")
         }
     }
 
     fun onRender() {
-        if (state.document.value.pages.size == 0)
+        if (state.value.document.value.pages.size == 0)
             newPage()
     }
 
@@ -245,4 +251,5 @@ class DocumentController : Controller {
             else -> {}
         }
     }
+
 }

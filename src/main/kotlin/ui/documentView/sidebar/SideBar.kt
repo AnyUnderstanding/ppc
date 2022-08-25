@@ -3,13 +3,14 @@ package ui.documentView.sidebar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.ripple.rememberRipple
@@ -41,21 +42,18 @@ private val RegisterShape = GenericShape { size, _ ->
     lineTo(0f, size.height)
 }
 
-//private val LineShape = GenericShape { size, _ ->
-//    lineTo(0f, size.height)
-//    lineTo(0f, 0f)
-//}
-
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPCWindowState) {
     val expanded = remember { mutableStateOf(false) }
+
+    val loadedDoc = documentViewControlState.loadedDoc
     // Box(modifier = Modifier.fillMaxSize().clickable { documentViewControlState.sideBarActivated.value = false })
     Surface(
         modifier = Modifier.fillMaxHeight().background(Color(0xFF00FF00))
             .fillMaxWidth(0.2f + (if (expanded.value) 0.2f else 0f))
     ) {
-        var activatedRegister by remember { mutableStateOf(-1) }
+//        var activatedRegister by remember { mutableStateOf(-1) }
 
 //        val folders = windowState.folders
         // folder
@@ -64,29 +62,32 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
             HeadBar(documentViewControlState)
             Row {
                 Column(Modifier.fillMaxWidth(if (expanded.value) 0.5f else 1f)) {
-                    windowState.folders.value.forEachIndexed { i, it ->
+                    documentViewControlState.folders.value.forEachIndexed { i, it ->
 
                         Register(
                             it,
                             Color.Red,
-                            documentViewControlState.loadedDoc.value.workbook.value?.name == it.name,
+                            loadedDoc.value.workbook.value?.name == it.name,
                             it.children,
+                            loadedDoc.value,
                             documentViewControlState,
                             expanded,
                             windowState
                         )
                     }
-                    AddButton(windowState, null)
+                    AddDialog(documentViewControlState, windowState, null)
                 }
 
                 if (expanded.value) {
                     Column(
                         modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight().fillMaxWidth()
                             .drawBehind { drawLine(Color(0xFFE9E9E9), Offset(0f, 0f), Offset(0f, size.height), 3f) }) {
-                        documentViewControlState.loadedDoc.value.folder.value?.children?.forEach {
+
+                        loadedDoc.value.folder.value?.children?.forEach {
 
                             Row(Modifier.fillMaxWidth().clickable {
                                 expanded.value = true
+                                loadedDoc.value.file = it
                             }.fillMaxWidth()) {
                                 Text(
                                     text = it.name,
@@ -98,7 +99,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
 
                             }
                         }
-                        AddButton(windowState, documentViewControlState.loadedDoc.value.folder.value, true)
+                        AddDialog(documentViewControlState, windowState, loadedDoc.value.folder.value, true)
 
                     }
                 }
@@ -114,6 +115,7 @@ fun Register(
     color: Color,
     activated: Boolean = false,
     children: MutableList<DocumentInformation>,
+    loadedDoc: LoadedDoc,
     documentViewControlState: DocumentViewControlState,
     expanded: MutableState<Boolean>,
     windowState: PPCWindowState
@@ -126,12 +128,11 @@ fun Register(
             interactionSource = remember { MutableInteractionSource() },
             indication = rememberRipple(color = color)
         ) {
-            documentViewControlState.loadedDoc.value.workbook.value = doc
+            loadedDoc.workbook.value = doc
             expanded.value = false
         }
 
     ) {
-
         Box(
             modifier = Modifier.size(20.dp, height).clip(RegisterShape).background(color)
         )
@@ -148,7 +149,8 @@ fun Register(
         children.forEach {
             Row(Modifier.fillMaxWidth().clickable {
                 expanded.value = true
-                documentViewControlState.loadedDoc.value.folder.value = it
+                loadedDoc.folder.value = it
+
             }) {
                 Text(
                     text = it.name,
@@ -161,7 +163,7 @@ fun Register(
             }
         }
 
-        AddButton(windowState, doc)
+        AddDialog(documentViewControlState, windowState, doc)
     }
 }
 
@@ -186,7 +188,6 @@ fun HeadBar(documentViewControlState: DocumentViewControlState) {
 fun SearchBar() {
     val value = remember { mutableStateOf(TextFieldValue()) }
     val intSource = remember { MutableInteractionSource() }
-    val focused = intSource.collectIsFocusedAsState()
 
     BasicTextField(
         value = value.value,
@@ -215,19 +216,64 @@ fun SearchBar() {
 
 
 @Composable
-fun AddButton(
+fun AddDialog(
+    documentViewControlState: DocumentViewControlState,
     windowState: PPCWindowState,
     parent: DocumentInformation?,
     file: Boolean = false
 ) {
-    Button({
-        val charset = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-        val t = List(20) { charset.random() }.joinToString("")
-        if (file) windowState.application.newFile(parent, t)
-        else windowState.application.newFolder(parent, t)
 
-        windowState.updateDocs()
-    }) {
-        Text("Add")
+    var active by remember { mutableStateOf(false) }
+    val value = remember { mutableStateOf(TextFieldValue()) }
+    val intSource = remember { MutableInteractionSource() }
+
+    println(parent?.path)
+
+    Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(20.dp)) {
+
+        if (active) {
+            BasicTextField(
+                value = value.value,
+                modifier = Modifier.fillMaxWidth(0.6f).height(40.dp).clip(RoundedCornerShape(15.dp)),
+                interactionSource = intSource,
+                onValueChange = {
+                    value.value = it
+                },
+                singleLine = true,
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC))
+                            .clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(Modifier.size(10.dp))
+                        innerTextField()
+
+                    }
+                }
+            )
+            IconButton({ active = false; value.value = TextFieldValue() }) {
+                Icon(Icons.Filled.Close, "cancel")
+            }
+
+            IconButton({
+                if (value.value.text.isBlank()) return@IconButton
+                if (file) documentViewControlState.createDocument(parent!!, value.value.text)
+                else windowState.application.newFolder(parent, value.value.text)
+
+                documentViewControlState.updateDocs()
+                active = false
+                value.value = TextFieldValue()
+            }) {
+                Icon(Icons.Filled.Check, "add")
+            }
+
+
+        } else {
+            Button({
+                active = true
+            }) {
+                Text("Add")
+            }
+        }
     }
 }

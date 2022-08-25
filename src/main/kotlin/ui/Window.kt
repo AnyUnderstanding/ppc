@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalSerializationApi::class)
+
 package ui
 
 
@@ -32,7 +33,10 @@ fun <T : WindowControlState> PPCWindow(
     Window(
         state = windowState.window,
         title = "PPC",
-        onCloseRequest = { exit() },
+        onCloseRequest = {
+            controlState.finalize()
+            exit()
+        },
         alwaysOnTop = true,
     ) {
         RenderWindow(windowState, controlState)

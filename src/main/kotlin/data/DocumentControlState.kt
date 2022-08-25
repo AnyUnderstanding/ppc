@@ -9,9 +9,11 @@ class DocumentControlState(
     val documentController: DocumentController,
     doc: Document
 ) : WindowControlState {
-    val strokes = mutableStateListOf<Stroke>()
     var document = mutableStateOf(doc)
         private set
+
+//    override fun finalize() {}
+
 
 //    var document by remember { mutableStateOf(doc) }
 //        private set

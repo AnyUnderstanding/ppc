@@ -28,7 +28,7 @@ var localCenter = Point(0, 0)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PPCCanvas(controller: DocumentController) {
-    val state = controller.state
+    val state = controller.state.value
     val document = state.document.value
     var mousePos by remember { mutableStateOf(Offset(0f, 0f)) }
 
@@ -55,7 +55,8 @@ fun PPCCanvas(controller: DocumentController) {
         }.onPointerEvent(PointerEventType.Scroll) {
             if (it.keyboardModifiers.isCtrlPressed)
                 controller.mouse.mouseWheelZoom(-it.changes.first().scrollDelta.y / 2)
-            else controller.mouse.mouseWheelScroll(it.changes.first().scrollDelta.y)
+            else
+                controller.mouse.mouseWheelScroll(it.changes.first().scrollDelta)
         }.onPointerEvent(PointerEventType.Move) {
             it.changes.first()
         }

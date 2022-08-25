@@ -39,9 +39,12 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         }
     }
 
-    fun mouseWheelScroll(scrollDelta: Float) {
-        if (!pressed)
-            documentController.scrollY(scrollDelta * (30))
+    fun mouseWheelScroll(delta: Offset) {
+        val speed = 30
+        if (!pressed) {
+            documentController.scrollX(delta.x * speed)
+            documentController.scrollY(delta.y * speed)
+        }
     }
 
     fun mouseWheelZoom(scrollDelta: Float) {
@@ -81,6 +84,9 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         }
     }
 
+    fun mouseWheelHorizontalScroll(scrollDelta: Float) {
+        if (!pressed)
+            documentController.scrollX(scrollDelta * (30))}
 
 
 }
