@@ -86,6 +86,8 @@ fun ColorSlider(DocumentController: DocumentController) {
         else if (selectorOffsetX < 0f) selectorOffsetX = 0f
         value = (0.9f * selectorOffsetX) / width
 
+
+
     }
 
     DocumentController.setColor(getColorAt(value, rainbowColors))

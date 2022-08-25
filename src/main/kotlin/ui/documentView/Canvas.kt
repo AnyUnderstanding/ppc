@@ -18,6 +18,7 @@ import data.*
 import util.Point
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.input.pointer.*
 import kotlin.math.*
 
@@ -266,6 +267,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
     var horizontalLines = (pageSize.y / horizontalDelta).roundToInt()
     var verticalLines = (pageSize.x / verticalDelta).roundToInt()
 
+    var strokeStyle: DrawStyle = androidx.compose.ui.graphics.drawscope.Stroke()
     when (page.pageType) {
         PageType.Ruled -> {
             val lineDistance = (pageSize.y / 33).toFloat()
@@ -293,19 +295,18 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
         }
 
         PageType.Dotted -> {
+            strokeStyle = androidx.compose.ui.graphics.drawscope.Fill
+
+            val dotSize = 2 * document.zoomFactor
             for (hi in 1 until horizontalLines) {
                 for (vi in 1 until verticalLines) {
                     p.moveTo(
                         (topLeftPos.x + verticalDelta * vi).toFloat(),
                         (topLeftPos.y + horizontalDelta * hi).toFloat()
                     )
-                    //p.addOval(Rect(dotSize,dotSize,dotSize,dotSize)) -> Is broken?
+                    p.addOval(Rect((topLeftPos.x + verticalDelta * vi).toFloat(),(topLeftPos.y + horizontalDelta * hi).toFloat(),(topLeftPos.x + verticalDelta * vi).toFloat() + dotSize,(topLeftPos.y + horizontalDelta * hi).toFloat() + dotSize))
 
-                    // temporary fix
-                    p.lineTo(
-                        (topLeftPos.x + verticalDelta * vi).toFloat() + document.zoomFactor,
-                        (topLeftPos.y + horizontalDelta * hi).toFloat() + document.zoomFactor
-                    )
+
                 }
             }
 
@@ -343,7 +344,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
 
 
     }
-    drawPath(path = p, color = Color.DarkGray, style = androidx.compose.ui.graphics.drawscope.Stroke())
+    drawPath(path = p, color = Color.DarkGray, style = strokeStyle)
 
 }
 
