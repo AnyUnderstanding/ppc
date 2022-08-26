@@ -1,76 +1,20 @@
 package control
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import data.*
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
 import util.Point
 import kotlin.math.abs
 
-class DocumentController(document: Document) : Controller {
-    val mouse = MouseInputHandler(this)
-    val state = mutableStateOf( DocumentControlState(this, document))
+class DocumentController(document: Document) : IDocumentController(document) {
 
-    val strokeController = StrokeController()
-    private var canvasSize = Point(0, 0)
-    var selection: MutableState<Selection?> = mutableStateOf(null)
     var selectedPage: Page? = null
         private set
 
-    var localCenter = Point(0, 0)
-        private set
 
-    var selectedTool: MutableState<Tool> = mutableStateOf(Eraser())
-    var selectedColor: Color = Color.Red
-
-
-
-
-
-    fun toolDraggedEnded() {
-        when (selectedTool.value) {
-            is Selector -> selection.value?.selectionComplete = true
-            is TPen -> if (selectedPage != null) strokeController.endStroke()
-
-            else -> {}
-
-        }
+    override fun penDown(mousePos: Point) {
+        if (selectedPage != null) newStroke()
     }
 
-    fun toolDragged(point: Point) {
-
-        val globalPoint = localCoordsToGlobal(point)
-
-        when (selectedTool.value) {
-
-            is TPen -> strokeAddPoint(globalPoint)
-            is Eraser -> eraserMoved(globalPoint)
-            is Selector -> selectorMoved(globalPoint)
-        }
-
-    }
-
-    fun toolDown() {
-        when (selectedTool.value) {
-            is Selector -> {
-                if (selection.value?.selectionComplete!!)
-                    selection.value = null
-            }
-            is TPen -> if (selectedPage != null) newStroke()
-
-            else -> {}
-        }
-    }
-
-    fun toolClicked() {
-
-    }
-
-    private fun selectorMoved(globalPoint: Point) {
+    override fun selectorMoved(globalPoint: Point) {
 
         getPageByPoint(globalPoint).let {
             if (it != selectedPage) {
@@ -98,7 +42,7 @@ class DocumentController(document: Document) : Controller {
 
     }
 
-    private fun strokeAddPoint(globalPoint: Point) {
+    override fun strokeAddPoint(globalPoint: Point) {
         getPageByPoint(globalPoint).let {
             if (it != selectedPage) {
                 selectedPage = it
@@ -112,7 +56,7 @@ class DocumentController(document: Document) : Controller {
     }
 
 
-    private fun eraserMoved(globalPoint: Point) {
+    override fun eraserMoved(globalPoint: Point) {
 
         getPageByPoint(globalPoint).let {
             if (it != selectedPage) {
@@ -149,6 +93,10 @@ class DocumentController(document: Document) : Controller {
 
     }
 
+    override fun newStroke(start: Point) {
+        TODO("Not yet implemented")
+    }
+
     fun newStroke() {
         val stroke = selectedPage?.newStroke((selectedTool.value as TPen).pen.color, (selectedTool.value as TPen).pen.width)
         if (stroke != null)
@@ -175,25 +123,9 @@ class DocumentController(document: Document) : Controller {
         }
     }
 
-    fun resize(newXDim: Int, newYDim: Int, localCenter: Point) {
-        canvasSize = Point(newXDim, newYDim)
-        this.localCenter = localCenter
-    }
 
-    fun scrollY(scrollDelta: Float) {
-        if (state.value.document.value.scrollY + scrollDelta < 0) return
-        state.value.document.value.centerPoint.value += Point(0, scrollDelta.toDouble())
-        state.value.document.value.scrollY += scrollDelta
-        println(state.value.document.value.centerPoint.value)
 
-    }
 
-    fun scrollX(scrollDelta: Float) {
-        println("X: $scrollDelta")
-        state.value.document.value.centerPoint.value += Point(scrollDelta.toDouble(), 0)
-        state.value.document.value.scrollX += scrollDelta
-
-    }
 
     fun newPage() {
         val document = state.value.document.value
@@ -204,52 +136,22 @@ class DocumentController(document: Document) : Controller {
         )
     }
 
-    fun zoom(zoomDelta: Float, localMousePos: Point) {
-        if (state.value.document.value.zoomFactor + zoomDelta <= 0) return
 
-        val zoomFactor = 1 / (state.value.document.value.zoomFactor + zoomDelta)
-        val newPos = localMousePos * zoomFactor
-        val delta = localMousePos * (1 / state.value.document.value.zoomFactor) - newPos
-        val newCenterPoint = state.value.document.value.centerPoint.value + delta
-        state.value.document.value.updateZoom(zoomDelta, newCenterPoint)
-    }
-
-    fun setColor(color: Color) {
-        selectedColor = color
-        strokeController.stroke?.color = color
-    }
 
     private fun localCoordsToGlobal(localPoint: Point): Point {
         val zoomFactor = 1 / state.value.document.value.zoomFactor
         return localPoint * zoomFactor + state.value.document.value.centerPoint.value - localCenter
     }
 
-    fun deleteSelection() {
+    override fun deleteSelection() {
         selection.value?.selectedStrokes?.let { selectedPage?.strokes?.removeAll(it) }
         selection.value = null
     }
 
-    fun moveSelection() {
 
-        // todo ... fix (:
-        selection.value?.selectedStrokes?.forEach {
-            it.move(Point(30.0, 30.0))
-        }
-    }
 
-    @OptIn(ExperimentalSerializationApi::class)
-    fun docToBytes(): ByteArray = Cbor.encodeToByteArray(state.value.document.value)
 
-    @OptIn(ExperimentalSerializationApi::class)
-    fun loadDocFromBytes(bytes: ByteArray) {
-        try {
-            state.value.document.value = Cbor.decodeFromByteArray(bytes)
-        } catch (e: Exception) {
-            println("Could not open file: $e")
-        }
-    }
-
-    fun onRender() {
+    override fun onRender() {
         if (state.value.document.value.pages.size == 0)
             newPage()
     }

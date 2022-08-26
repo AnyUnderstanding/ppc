@@ -1,43 +1,12 @@
 package control
 
 import androidx.compose.ui.geometry.Offset
-import data.TPen
 import util.Point
 
-class MouseInputHandler(val documentController: DocumentController) : InputHandler {
+class MouseInputHandler(val documentController: IDocumentController) : InputHandler {
     private var pressed: Boolean = false
     private var mousePos: Point = Point(0, 0)
     private var mouseDraged = false
-
-    fun mousePressed(mousePos: Offset) {
-        pressed = true
-        documentController.toolDragged(Point(mousePos.x.toDouble(), mousePos.y.toDouble()))
-    }
-
-
-    fun mouseReleased() {
-        pressed = false
-        if (!mouseDraged) {
-            documentController.toolClicked()
-        }
-        if (documentController.selectedTool.value is TPen) {
-            if (documentController.selectedPage != null) {
-                documentController.newStroke()
-            }
-        }
-    }
-
-
-
-    fun mouseMoved(mousePos: Offset) {
-        this.mousePos = Point(mousePos.x.toDouble(), mousePos.y.toDouble())
-        mouseDraged = false
-        if (pressed) {
-            documentController.toolDragged(this.mousePos)
-            mouseDraged = true
-
-        }
-    }
 
     fun mouseWheelScroll(delta: Offset) {
         val speed = 30
@@ -60,7 +29,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         isPressed = true
         mousePos = Point(position.x.toDouble(), position.y.toDouble())
         documentController.toolDragged(mousePos)
-        documentController.toolDown()
+        documentController.toolDown(mousePos)
 
     }
 
@@ -84,9 +53,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         }
     }
 
-    fun mouseWheelHorizontalScroll(scrollDelta: Float) {
-        if (!pressed)
-            documentController.scrollX(scrollDelta * (30))}
+
 
 
 }

@@ -38,7 +38,8 @@ fun DocumentView(windowState: PPCWindowState, documentViewControlState: Document
                 localOffset.x.toInt(),
                 localOffset.y.toInt()
             )
-            SelectionMenu(test, documentController)
+            if (documentController.selection.value!!.selectionComplete.value)
+                SelectionMenu(test, documentController)
         }
 
         documentViewControlState.activeDialog.value?.let {

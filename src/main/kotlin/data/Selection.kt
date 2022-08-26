@@ -13,7 +13,7 @@ class Selection(var start: Point) {
     var end: MutableState<Point?> = mutableStateOf(null)
     var selectedStrokes = mutableListOf<Stroke>()
     var strokeBoundingBox: BoundingBox? = null
-    var selectionComplete = false
+    var selectionComplete = mutableStateOf(false)
 
 
 
@@ -32,6 +32,10 @@ class Selection(var start: Point) {
                 strokes.map { it.mainBoundingBox.point0 }
                     .zip(strokes.map { it.mainBoundingBox.point1 }) { a, b -> listOf(a, b) }.flatten()
             )
+    }
+
+    fun isEmpty(): Boolean {
+        return selectedStrokes.isEmpty()
     }
 
     fun complete() {

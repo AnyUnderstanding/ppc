@@ -80,7 +80,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
 
                 if (expanded.value) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(0.5f).fillMaxHeight().fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight().fillMaxWidth()
                             .drawBehind { drawLine(Color(0xFFE9E9E9), Offset(0f, 0f), Offset(0f, size.height), 3f) }) {
 
                         loadedDoc.value.folder.value?.children?.forEach {
