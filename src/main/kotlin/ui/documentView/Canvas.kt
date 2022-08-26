@@ -142,14 +142,7 @@ fun PPCCanvas(controller: DocumentController) {
 
 
 
-                drawPath(
-                    path = path,
-                    color = Color.DarkGray,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(
-                        width = 1F,
-                        cap = StrokeCap.Round,
-                    )
-                )
+
 
 
 
@@ -157,7 +150,7 @@ fun PPCCanvas(controller: DocumentController) {
                     path = path,
                     color = s.color,
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
-                        width = 1.0F * document.zoomFactor,
+                        width = s.width * document.zoomFactor,
                         cap = StrokeCap.Round
                     )
                 )
@@ -167,19 +160,19 @@ fun PPCCanvas(controller: DocumentController) {
         }
 
         when (state.documentController.selectedTool.value) {
-            Tool.Eraser -> drawCircle(
+            is Eraser -> drawCircle(
                 color = Color(0xAA9C9C9C),
                 center = mousePos,
                 radius = 10.0F
             )
 
-            Tool.Pen -> drawCircle(
+            is TPen -> drawCircle(
                 color = Color(0xFF9C9C9C),
                 center = mousePos,
                 radius = 3.0F
             )
 
-            Tool.Selector -> {
+            is Selector -> {
                 state.documentController.selection.value?.let { selection ->
                     if (selection.end.value == null) return@let
                     val selectionPath = Path()

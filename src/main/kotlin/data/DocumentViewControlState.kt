@@ -34,16 +34,17 @@ class LoadedDoc(val documentViewControlState: DocumentViewControlState) {
 }
 
 
-class DocumentViewControlState(docCon: DocumentController, val application: ApplicationState) : WindowControlState {
+class DocumentViewControlState(docCon: DocumentController, private val application: ApplicationState) : WindowControlState {
 
 
-    var activeDialog: MutableState<Pair<(@Composable (DocumentController) -> Unit), String>?> = mutableStateOf(null)
+    var activeDialog: MutableState<Triple<(@Composable (DocumentController) -> Unit), String,  () -> Unit>?> = mutableStateOf(null)
     var documentController = mutableStateOf(docCon)
     var sideBarActivated = mutableStateOf(false)
     var loadedDoc = mutableStateOf(LoadedDoc(this))
     var folders: MutableState<List<DocumentInformation>> =
         mutableStateOf(application.loadDocumentInformation(loadedDoc = loadedDoc.value))
     var autoSaveJob = AutoSaveJob(application)
+
 
 
     fun loadDocument(docInfo: DocumentInformation) {
@@ -74,6 +75,14 @@ class DocumentViewControlState(docCon: DocumentController, val application: Appl
 
     override fun finalize() {
         autoSaveJob.cancel()
+    }
+
+    fun addPen(pen: Pen){
+        application.pens.add(pen)
+    }
+
+    fun getPens(): MutableList<Pen>{
+        return application.pens
     }
 }
 

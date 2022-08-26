@@ -1,7 +1,7 @@
 package control
 
 import androidx.compose.ui.geometry.Offset
-import data.Tool
+import data.TPen
 import util.Point
 
 class MouseInputHandler(val documentController: DocumentController) : InputHandler {
@@ -20,7 +20,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         if (!mouseDraged) {
             documentController.toolClicked()
         }
-        if (documentController.selectedTool.value == Tool.Pen) {
+        if (documentController.selectedTool.value is TPen) {
             if (documentController.selectedPage != null) {
                 documentController.newStroke()
             }
@@ -60,7 +60,7 @@ class MouseInputHandler(val documentController: DocumentController) : InputHandl
         isPressed = true
         mousePos = Point(position.x.toDouble(), position.y.toDouble())
         documentController.toolDragged(mousePos)
-        documentController.inputDown()
+        documentController.toolDown()
 
     }
 

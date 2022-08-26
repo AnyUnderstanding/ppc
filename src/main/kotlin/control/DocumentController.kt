@@ -3,8 +3,6 @@ package control
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.window.Dialog
 import data.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
@@ -26,7 +24,7 @@ class DocumentController(document: Document) : Controller {
     var localCenter = Point(0, 0)
         private set
 
-    var selectedTool = mutableStateOf(Tool.Pen)
+    var selectedTool: MutableState<Tool> = mutableStateOf(Eraser())
     var selectedColor: Color = Color.Red
 
 
@@ -35,8 +33,9 @@ class DocumentController(document: Document) : Controller {
 
     fun toolDraggedEnded() {
         when (selectedTool.value) {
-            Tool.Pen -> if (selectedPage != null) newStroke()
-            Tool.Selector -> selection.value?.selectionComplete = true
+            is Selector -> selection.value?.selectionComplete = true
+            is TPen -> if (selectedPage != null) strokeController.endStroke()
+
             else -> {}
 
         }
@@ -47,11 +46,24 @@ class DocumentController(document: Document) : Controller {
         val globalPoint = localCoordsToGlobal(point)
 
         when (selectedTool.value) {
-            Tool.Pen -> strokeAddPoint(globalPoint)
-            Tool.Eraser -> eraserMoved(globalPoint)
-            Tool.Selector -> selectorMoved(globalPoint)
+
+            is TPen -> strokeAddPoint(globalPoint)
+            is Eraser -> eraserMoved(globalPoint)
+            is Selector -> selectorMoved(globalPoint)
         }
 
+    }
+
+    fun toolDown() {
+        when (selectedTool.value) {
+            is Selector -> {
+                if (selection.value?.selectionComplete!!)
+                    selection.value = null
+            }
+            is TPen -> if (selectedPage != null) newStroke()
+
+            else -> {}
+        }
     }
 
     fun toolClicked() {
@@ -138,7 +150,7 @@ class DocumentController(document: Document) : Controller {
     }
 
     fun newStroke() {
-        val stroke = selectedPage?.newStroke(selectedColor)
+        val stroke = selectedPage?.newStroke((selectedTool.value as TPen).pen.color, (selectedTool.value as TPen).pen.width)
         if (stroke != null)
             strokeController.newStroke(stroke)
 
@@ -204,7 +216,7 @@ class DocumentController(document: Document) : Controller {
 
     fun setColor(color: Color) {
         selectedColor = color
-        strokeController.stroke.color = color
+        strokeController.stroke?.color = color
     }
 
     private fun localCoordsToGlobal(localPoint: Point): Point {
@@ -242,14 +254,6 @@ class DocumentController(document: Document) : Controller {
             newPage()
     }
 
-    fun inputDown() {
-        when (selectedTool.value) {
-            Tool.Selector -> {
-                if (selection.value?.selectionComplete!!)
-                    selection.value = null
-            }
-            else -> {}
-        }
-    }
+
 
 }

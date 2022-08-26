@@ -13,7 +13,7 @@ import kotlin.streams.toList
 class StrokeController {
     // https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline
 
-    var stroke = Stroke()
+    var stroke: Stroke? = Stroke()
     val points = ArrayList<Point>()
     private var sampleCount = 0
     private val sampleAfter = 5
@@ -87,9 +87,10 @@ class StrokeController {
     }
 
 
-    fun newStroke(s: Stroke) {
-
+    fun endStroke(){
+        if (stroke == null) return
         val allPoints = mutableListOf<Point>()
+        val stroke = stroke!!
         allPoints.addAll(0, stroke.pendingPoints)
         allPoints.addAll(0, stroke.spline)
 
@@ -104,13 +105,18 @@ class StrokeController {
             stroke.mainBoundingBox = calcBoundingBox(allPoints)
         }
 
-
+        this.stroke = null
+    }
+    fun newStroke(s: Stroke) {
         stroke = s
         sampleCount = 0
         points.clear()
     }
 
     fun addPoint(point: Point) {
+        if (stroke == null) return
+        val stroke = stroke!!
+
         stroke.pendingPoints.add(point)
         if (sampleCount % sampleAfter == 0) {
             points.add(point)

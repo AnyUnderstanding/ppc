@@ -29,8 +29,13 @@ class Stroke() {
     @Serializable(with = ColorSerializer::class)
     var color: Color = Color.Red
 
-    constructor(pcolor: Color) : this() {
-        color = pcolor
+    @Serializable
+    var width = 1f
+
+    constructor(pColor: Color, pWidth: Float) : this() {
+        color = pColor
+        width = pWidth
+
     }
 
 

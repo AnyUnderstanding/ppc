@@ -6,9 +6,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import data.DocumentViewControlState
-import data.Tool
+import data.*
 import ui.documentView.toolbar.colorpicker.ColorSlider
 
 
@@ -19,33 +19,68 @@ val Tab2 = @Composable { documentViewControlState: DocumentViewControlState -> T
 fun Tab1(documentViewControlState: DocumentViewControlState) {
     Row(modifier = Modifier.height(70.dp)) {
         ToolSelectButton(
-            documentViewControlState.documentController.value.selectedTool.value == Tool.Eraser,
+            documentViewControlState.documentController.value.selectedTool.value is Eraser,
             "eraser.svg"
         ) {
-            documentViewControlState.documentController.value.selectedTool.value = Tool.Eraser
+            documentViewControlState.documentController.value.selectedTool.value = Eraser()
         }
         BarDivider()
+        val tp: TPen? = if (documentViewControlState.documentController.value.selectedTool.value is TPen) (documentViewControlState.documentController.value.selectedTool.value as TPen) else null
 
-        ToolSelectButton(
-            documentViewControlState.documentController.value.selectedTool.value == Tool.Pen,
-            "coloredPen.svg"
-        ) {
-            documentViewControlState.documentController.value.selectedTool.value = Tool.Pen
+        documentViewControlState.getPens().forEach {
+            ToolSelectButton(
+                tp?.pen === it,
+                "coloredPen.svg"
+            ) {
+                documentViewControlState.documentController.value.selectedTool.value = TPen(it)
+            }
         }
+
+
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            IconButton(false, "pen.svg", 20.dp, Modifier.height(40.dp))
-            IconButton(false, "add.svg", 20.dp, Modifier.height(40.dp))
+            IconButton(false, "pen.svg", 20.dp, Modifier.height(40.dp)){
+                val selectedPen: TPen? =
+                    documentViewControlState.documentController.value.selectedTool.value as? TPen
+                selectedPen?.let {
+
+                    var penColor = Color.Red
+                    documentViewControlState.activeDialog.value =
+                        Triple(@Composable {
+                            ColorSlider(documentViewControlState.documentController.value) { color ->
+                                penColor = color
+                                println(color)
+                            }
+                        }, "color picker") {
+                            // finalize
+                            it.pen.color = penColor
+                        }
+                }
+            }
+            IconButton(false, "add.svg", 20.dp, Modifier.height(40.dp)){
+                var penColor = Color.Red
+                documentViewControlState.activeDialog.value =
+                    Triple(@Composable { ColorSlider(documentViewControlState.documentController.value) { color ->
+                        penColor = color
+                        println(color)
+                    }
+                    }, "color picker"){
+                        // finalize
+                        documentViewControlState.addPen(Pen(penColor, 1f))
+
+                    }
+
+            }
         }
 
         BarDivider()
 
 
         ToolSelectButton(
-            documentViewControlState.documentController.value.selectedTool.value == Tool.Selector,
+            documentViewControlState.documentController.value.selectedTool.value is Selector,
             "selection.svg"
         ) {
-            documentViewControlState.documentController.value.selectedTool.value = Tool.Selector
+            documentViewControlState.documentController.value.selectedTool.value = Selector()
         }
     }
 
@@ -60,8 +95,8 @@ fun Tab2(documentViewControlState: DocumentViewControlState) {
             Text("new Page")
         }
         Button(onClick = {
-            documentViewControlState.activeDialog.value =
-                Pair(@Composable { ColorSlider(documentViewControlState.documentController.value) }, "color picker")
+          //  documentViewControlState.activeDialog.value =
+          //      Pair(@Composable { ColorSlider(documentViewControlState.documentController.value) }, "color picker")
         }) {
             Text("color picker")
         }

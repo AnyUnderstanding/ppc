@@ -1,4 +1,5 @@
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import ui.PPCWindowState
 import data.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,6 +21,8 @@ class ApplicationState {
 
 
     val settings = Settings()
+    val pens = mutableStateListOf<Pen>(Pen(Color(0xA00000FF), 2f), Pen(Color.Blue, 1f))
+
 
     private val _windows = mutableStateListOf<PPCWindowState>()
     val windows: List<PPCWindowState> get() = _windows

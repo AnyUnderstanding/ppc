@@ -36,6 +36,7 @@ fun ToolDialog(
             interactionSource = interactionSource,
             indication = null,
         ) {
+            documentViewControlState.activeDialog.value?.third?.invoke()
             documentViewControlState.activeDialog.value = null
 
         },

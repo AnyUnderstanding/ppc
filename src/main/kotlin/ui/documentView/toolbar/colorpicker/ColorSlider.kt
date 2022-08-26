@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ColorSlider(DocumentController: DocumentController) {
+fun ColorSlider(DocumentController: DocumentController, callBack: (color: Color) -> Unit = {}) {
 
     var value by remember { mutableStateOf(0f) }
     var size = 15
@@ -91,6 +91,7 @@ fun ColorSlider(DocumentController: DocumentController) {
     }
 
     DocumentController.setColor(getColorAt(value, rainbowColors))
+    callBack(getColorAt(value, rainbowColors))
 
 
 }
@@ -110,11 +111,11 @@ fun getColorAt(value: Float, colors: List<Color>): Color {
 }
 
 @Composable
-fun Donut(color: Color, r: Float, thickness: Float) {
+fun Donut(color: Color, r: Float, width: Float) {
 
 
     val p1 = circlePath(r)
-    val p2 = circlePath(r - thickness,thickness, thickness)
+    val p2 = circlePath(r - width,width, width)
     Surface(modifier = Modifier.size(r.dp),
         color = Color.White,
         shape = object : Shape {
