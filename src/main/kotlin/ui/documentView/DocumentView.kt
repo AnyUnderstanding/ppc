@@ -1,19 +1,19 @@
 package ui.documentView
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.onClick
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import data.DocumentViewControlState
-import ui.PPCCanvas
-import ui.PPCWindowState
+import ui.*
 import ui.documentView.sidebar.SideBar
 import ui.documentView.toolbar.ToolDialog
 import ui.documentView.toolbar.Toolbar
-import ui.getLocalDrawingOffset
 
 
 val DocumentView: @Composable (PPCWindowState, DocumentViewControlState) -> Unit =
@@ -21,11 +21,12 @@ val DocumentView: @Composable (PPCWindowState, DocumentViewControlState) -> Unit
         DocumentView(windowState, windowControlState)
     }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DocumentView(windowState: PPCWindowState, documentViewControlState: DocumentViewControlState) {
     val documentController = documentViewControlState.documentController.value
     remember { documentViewControlState }
-    Box(modifier = Modifier.background(Color(0xFFF8FCFF))) {
+    Box(modifier = Modifier.background(THEME.value.background)) {
             PPCCanvas(documentController)
             Toolbar(documentViewControlState)
 

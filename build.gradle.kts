@@ -20,7 +20,9 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.4.0")
+//    implementation("com.charleskorn.kaml:kaml:0.47.0")
 }
 
 tasks.withType<KotlinCompile>() {

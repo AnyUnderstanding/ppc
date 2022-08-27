@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import data.DocumentViewControlState
+import ui.THEME
 
 
 private val tabs = listOf(Tab1, Tab2)
@@ -17,7 +18,7 @@ private val tabs = listOf(Tab1, Tab2)
 fun Toolbar(documentViewControlState: DocumentViewControlState) {
     val tabIndex = remember { mutableStateOf(0) }
 
-    Column(modifier = Modifier.fillMaxWidth().background(Color(0xFFF0F0F0))) {
+    Column(modifier = Modifier.fillMaxWidth().background(THEME.value.mainColor)) {
         ToolbarTabSelect(tabIndex, documentViewControlState)
         tabs[tabIndex.value](documentViewControlState)
     }

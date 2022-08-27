@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import ui.THEME
 
 @Composable
 fun BarDivider() {
@@ -23,7 +24,7 @@ fun BarDivider() {
             .fillMaxHeight(0.5f)
             .width(2.dp)
             .clip(RoundedCornerShape(7.dp))
-            .background(Color(0xFFD8D8D8))
+            .background(THEME.value.dividerColor)
             .align(Alignment.Center)
 
     )

@@ -161,13 +161,13 @@ fun PPCCanvas(controller: DocumentController) {
 
         when (state.documentController.selectedTool.value) {
             is Eraser -> drawCircle(
-                color = Color(0xAA9C9C9C),
+                color = THEME.value.toolIndicator,
                 center = mousePos,
                 radius = 10.0F
             )
 
             is TPen -> drawCircle(
-                color = Color(0xFF9C9C9C),
+                color = THEME.value.toolIndicator,
                 center = mousePos,
                 radius = 3.0F
             )
@@ -205,7 +205,7 @@ fun PPCCanvas(controller: DocumentController) {
                     }
                     drawPath(
                         path = strokeBoundingPath,
-                        color = Color(0xAA7B7B7B),
+                        color = THEME.value.selectorColor,
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
                             width = 1.5F,
                             cap = StrokeCap.Round,
@@ -220,7 +220,7 @@ fun PPCCanvas(controller: DocumentController) {
 
                     drawPath(
                         path = selectionPath,
-                        color = Color(0xAA7B7B7B),
+                        color = THEME.value.selectorColor,
                         style = androidx.compose.ui.graphics.drawscope.Stroke(
                             width = 1.5F,
                             cap = StrokeCap.Round,
@@ -245,13 +245,13 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
 
     drawPath(
         path = path,
-        color = Color.DarkGray,
+        color = THEME.value.pageForeground,
         style = androidx.compose.ui.graphics.drawscope.Stroke(
             width = 1F,
             cap = StrokeCap.Round,
         )
     )
-    drawRect(color = Color.White, topLeft = topLeftPos, size = Size(pageSize.x.toFloat(), pageSize.y.toFloat()))
+    drawRect(color = THEME.value.pageBackground, topLeft = topLeftPos, size = Size(pageSize.x.toFloat(), pageSize.y.toFloat()))
 
 //    drawLine(Color.Black, topLeftPos, topLeftPos + Offset(0, ))
     val p = Path()
@@ -338,7 +338,7 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
 
 
     }
-    drawPath(path = p, color = Color.DarkGray, style = strokeStyle)
+    drawPath(path = p, color = THEME.value.pageForeground, style = strokeStyle)
 
 }
 

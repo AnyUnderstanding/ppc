@@ -12,11 +12,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ui.THEME
 
 // when to load images -> loading images with every recompose is probably bad
 @Composable
@@ -37,7 +36,7 @@ fun IconButton(isActivated: Boolean, iconPath: String,size: Dp = 40.dp, modifier
             modifier = Modifier.size(size),
             painter = painterResource(iconPath),
             contentDescription = null,
-            tint = Color(0xFF6B6B6B)
+            tint = THEME.value.iconColor
         )
         if (isActivated) {
             Box(
@@ -50,7 +49,7 @@ fun IconButton(isActivated: Boolean, iconPath: String,size: Dp = 40.dp, modifier
                         .fillMaxWidth(0.5f)
                         .height(5.dp)
                         .clip(RoundedCornerShape(15.dp))
-                        .background(Color(0xFF13C6FF))
+                        .background(THEME.value.highlightColor)
 
                 )
             }

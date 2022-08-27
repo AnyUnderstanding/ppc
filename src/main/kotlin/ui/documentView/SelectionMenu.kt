@@ -12,11 +12,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import control.DocumentController
+import ui.THEME
 import ui.documentView.toolbar.IconButton
 
 @Composable
 fun SelectionMenu(offset: IntOffset, documentController: DocumentController){
-    Row (Modifier.offset{ offset }.clip(RoundedCornerShape(50)).background(Color(0xFFF0F0F0))){
+    Row (Modifier.offset{ offset }.clip(RoundedCornerShape(50)).background(THEME.value.mainColor)){
         SelectionMenuItem(icon = "delete.svg"){
             documentController.deleteSelection()
         }

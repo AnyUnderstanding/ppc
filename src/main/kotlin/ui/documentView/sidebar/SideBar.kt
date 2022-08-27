@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import data.*
 import ui.PPCWindowState
+import ui.THEME
 import ui.documentView.toolbar.IconButton
 
 
@@ -50,7 +51,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
     val loadedDoc = documentViewControlState.loadedDoc
     // Box(modifier = Modifier.fillMaxSize().clickable { documentViewControlState.sideBarActivated.value = false })
     Surface(
-        modifier = Modifier.fillMaxHeight().background(Color(0xFF00FF00))
+        modifier = Modifier.fillMaxHeight().background(THEME.value.menuBody)
             .fillMaxWidth(0.2f + (if (expanded.value) 0.2f else 0f))
     ) {
 //        var activatedRegister by remember { mutableStateOf(-1) }
@@ -58,7 +59,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
 //        val folders = windowState.folders
         // folder
 
-        Column(Modifier.background(Color.White).fillMaxWidth()) {
+        Column(Modifier.background(THEME.value.menuBody).fillMaxWidth()) {
             HeadBar(documentViewControlState)
             Row {
                 Column(Modifier.fillMaxWidth(if (expanded.value) 0.5f else 1f)) {
@@ -81,7 +82,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
                 if (expanded.value) {
                     Column(
                         modifier = Modifier.fillMaxWidth().fillMaxHeight().fillMaxWidth()
-                            .drawBehind { drawLine(Color(0xFFE9E9E9), Offset(0f, 0f), Offset(0f, size.height), 3f) }) {
+                            .drawBehind { drawLine(THEME.value.dividerColor, Offset(0f, 0f), Offset(0f, size.height), 3f) }) {
 
                         loadedDoc.value.folder.value?.children?.forEach {
 
@@ -94,7 +95,7 @@ fun SideBar(documentViewControlState: DocumentViewControlState, windowState: PPC
                                     modifier = Modifier.padding(30.dp, 10.dp),
                                     fontSize = TextUnit(1f, TextUnitType.Em),
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF6B6B6B)
+                                    color = THEME.value.textColor
                                 )
 
                             }
@@ -142,7 +143,7 @@ fun Register(
             fontWeight = FontWeight.SemiBold,
             fontSize = TextUnit(1.3f, TextUnitType.Em),
             textAlign = TextAlign.Center,
-            color = Color(0xFF6B6B6B)
+            color = THEME.value.textColor
         )
     }
     if (activated) {
@@ -157,7 +158,7 @@ fun Register(
                     modifier = Modifier.padding(30.dp, 10.dp),
                     fontSize = TextUnit(1f, TextUnitType.Em),
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF6B6B6B)
+                    color = THEME.value.textColor
                 )
                 if (it.type == DocumentInformationType.Folder) Icon(Icons.Filled.KeyboardArrowDown, "")
             }
@@ -170,7 +171,7 @@ fun Register(
 @Composable
 fun HeadBar(documentViewControlState: DocumentViewControlState) {
     Row(
-        Modifier.background(Color(0xFFE9E9E9)).height(70.dp).fillMaxWidth().padding(10.dp),
+        Modifier.background(THEME.value.secondaryColor).height(70.dp).fillMaxWidth().padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SearchBar()
@@ -199,13 +200,13 @@ fun SearchBar() {
         singleLine = true,
         decorationBox = { innerTextField ->
             Row(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC))
+                modifier = Modifier.fillMaxWidth().fillMaxHeight().background(THEME.value.textFieldColor)
                     .clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     Icons.Filled.Search,
                     "",
-                    tint = Color(/*if (focused.value) 0xFF13C6FF else*/ 0xFF6B6B6B),
+                    tint = THEME.value.iconColor,
                     modifier = Modifier.padding(5.dp)
                 )
                 innerTextField()
@@ -242,7 +243,7 @@ fun AddDialog(
                 singleLine = true,
                 decorationBox = { innerTextField ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight().background(Color(0xFFCCCCCC))
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight().background(THEME.value.textFieldColor)
                             .clip(RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically
                     ) {
                         Spacer(Modifier.size(10.dp))
@@ -252,7 +253,7 @@ fun AddDialog(
                 }
             )
             IconButton({ active = false; value.value = TextFieldValue() }) {
-                Icon(Icons.Filled.Close, "cancel")
+                Icon(Icons.Filled.Close, "cancel", tint = THEME.value.iconColor)
             }
 
             IconButton({
@@ -264,7 +265,7 @@ fun AddDialog(
                 active = false
                 value.value = TextFieldValue()
             }) {
-                Icon(Icons.Filled.Check, "add")
+                Icon(Icons.Filled.Check, "add", tint = THEME.value.iconColor)
             }
 
 

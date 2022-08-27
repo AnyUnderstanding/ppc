@@ -1,11 +1,10 @@
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
-import ui.PPCWindowState
 import data.*
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
+import ui.*
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -18,15 +17,18 @@ fun rememberApplicationState() = remember {
 }
 
 class ApplicationState {
-
-
     val settings = Settings()
     val pens = mutableStateListOf<Pen>(Pen(Color(0xA00000FF), 2f), Pen(Color.Blue, 1f))
 
+//    val theme = mutableStateOf(LightMode())
+
+    init {
+        THEME.value = if (settings.darkmode) DarkMode() else LightMode()
+    }
 
     private val _windows = mutableStateListOf<PPCWindowState>()
     val windows: List<PPCWindowState> get() = _windows
-    private val workingDirectoryPath = System.getProperty("user.home") + "/ppc/"
+    private val workingDirectoryPath = settings.ppcHome
 
     fun saveDocument(document: Document, path: Path) {
         path.writeBytes(
@@ -37,7 +39,6 @@ class ApplicationState {
     fun loadDocument(docInfo: DocumentInformation): Document? {
         return loadDocument(Path.of(docInfo.path))
     }
-
 
 
     fun loadDocument(docPath: Path): Document? {
@@ -52,7 +53,7 @@ class ApplicationState {
 
 
     fun loadDocumentInformation(
-        path: String = workingDirectoryPath,
+        path: String = workingDirectoryPath.pathString,
         depth: Int = 3,
         loadedDoc: LoadedDoc
     ): List<DocumentInformation> {
@@ -108,14 +109,14 @@ class ApplicationState {
     }
 
     fun newFolder(doc: DocumentInformation?, name: String) {
-        val parentPath = doc?.path ?: workingDirectoryPath
+        val parentPath = doc?.path ?: workingDirectoryPath.pathString
         runCatching {
             Path(parentPath, name).createDirectory()
         }
     }
 
     fun newFile(doc: DocumentInformation?, name: String) {
-        val parentPath = doc?.path ?: workingDirectoryPath
+        val parentPath = doc?.path ?: workingDirectoryPath.pathString
         runCatching {
             Path(parentPath, "$name.ppc").createFile()
         }

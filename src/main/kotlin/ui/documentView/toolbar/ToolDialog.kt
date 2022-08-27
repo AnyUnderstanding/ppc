@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import control.DocumentController
 import data.DocumentViewControlState
+import ui.THEME
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
@@ -44,17 +45,17 @@ fun ToolDialog(
 
     }
     Card(
-        modifier = Modifier.background(Color(0xFFF0F0F0))
+        modifier = Modifier.background(THEME.value.mainColor)
     ) {
         Column(Modifier.width(IntrinsicSize.Min)) {
-        Row(Modifier.fillMaxWidth().background(Color(0xFFE9E9E9)).height(40.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().background(THEME.value.secondaryColor).height(40.dp), verticalAlignment = Alignment.CenterVertically) {
 
             Text(
                 text = title,
                 modifier = Modifier.padding(10.dp),
                 fontSize = TextUnit(1f, TextUnitType.Em),
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF6B6B6B)
+                color = THEME.value.textColor
             )
         }
         content(documentViewControlState.documentController.value)

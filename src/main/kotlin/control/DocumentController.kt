@@ -131,7 +131,7 @@ class DocumentController(document: Document) : IDocumentController(document) {
         val document = state.value.document.value
 
         document.newPage(
-            PageType.Dotted,
+            PageType.Checkered,
             Point(-document.pageSize.width / 2.0, ((document.pageSize.height + 10) * document.pageCount).toDouble())
         )
     }

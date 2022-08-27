@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import control.DocumentController
+import ui.THEME
 import util.ColorVector
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -117,7 +118,7 @@ fun Donut(color: Color, r: Float, width: Float) {
     val p1 = circlePath(r)
     val p2 = circlePath(r - width,width, width)
     Surface(modifier = Modifier.size(r.dp),
-        color = Color.White,
+        color = THEME.value.menuBody,
         shape = object : Shape {
             override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
                 val p3 = Path()
