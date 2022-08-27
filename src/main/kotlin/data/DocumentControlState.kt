@@ -1,13 +1,11 @@
 package data
 
 import androidx.compose.runtime.*
-import control.DocumentController
-import control.IDocumentController
-import util.Point
+import control.DocumentControllerBase
 
 
 class DocumentControlState(
-    val documentController: IDocumentController,
+    val documentController: DocumentControllerBase,
     doc: Document
 ) : WindowControlState {
     var document = mutableStateOf(doc)

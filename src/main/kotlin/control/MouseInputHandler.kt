@@ -3,7 +3,7 @@ package control
 import androidx.compose.ui.geometry.Offset
 import util.Point
 
-class MouseInputHandler(val documentController: IDocumentController) : InputHandler {
+class MouseInputHandler(val documentController: DocumentControllerBase) : InputHandler {
     private var pressed: Boolean = false
     private var mousePos: Point = Point(0, 0)
     private var mouseDraged = false

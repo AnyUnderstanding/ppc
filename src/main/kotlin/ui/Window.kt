@@ -5,10 +5,11 @@ package ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.window.*
-import control.Controller
-import control.DocumentController
 import data.Document
+import data.DocumentViewControlState
 import data.WindowControlState
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -20,6 +21,7 @@ import java.io.File
 import java.nio.file.Path
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun <T : WindowControlState> PPCWindow(
     windowState: PPCWindowState,
@@ -38,6 +40,27 @@ fun <T : WindowControlState> PPCWindow(
             exit()
         },
         alwaysOnTop = true,
+        onKeyEvent = {
+            var retVal = false
+//            println("keyyy $controlState")
+            if (controlState is DocumentViewControlState) {
+                if (it.isCtrlPressed && it.type == KeyEventType.KeyDown) {
+                    if (it.key == Key.Z && !it.isShiftPressed) {
+                        println("key down: undo")
+
+                        controlState.documentController.value.undo()
+                        retVal = true
+                    } else if (it.key == Key.Y || it.key == Key.Z && it.isShiftPressed) {
+                        println("key down")
+
+                        controlState.documentController.value.redo()
+                        retVal = true
+                    }
+                }
+            }
+
+            retVal
+        }
     ) {
         RenderWindow(windowState, controlState)
     }

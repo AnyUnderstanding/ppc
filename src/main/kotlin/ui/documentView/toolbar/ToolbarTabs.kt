@@ -100,5 +100,16 @@ fun Tab2(documentViewControlState: DocumentViewControlState) {
         }) {
             Text("color picker")
         }
+        Button(onClick = {
+            documentViewControlState.documentController.value.undo()
+        }) {
+            Text("undo")
+        }
+        Button(onClick = {
+            documentViewControlState.documentController.value.redo()
+
+        }) {
+            Text("redo")
+        }
     }
 }

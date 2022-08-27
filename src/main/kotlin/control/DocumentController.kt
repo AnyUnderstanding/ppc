@@ -4,7 +4,7 @@ import data.*
 import util.Point
 import kotlin.math.abs
 
-class DocumentController(document: Document) : IDocumentController(document) {
+class DocumentController(document: Document) : DocumentControllerBase(document) {
 
     var selectedPage: Page? = null
         private set
@@ -86,7 +86,10 @@ class DocumentController(document: Document) : IDocumentController(document) {
                 }
             }
 
-            selectedPage?.strokes?.removeAll(erasedStrokes)
+            selectedPage?.removeStrokes(erasedStrokes)
+            if (selectedPage != null && erasedStrokes.size > 0)
+                actionQueue.addAction(DeleteAction(erasedStrokes, selectedPage!!))
+
 
         }
 
@@ -98,9 +101,11 @@ class DocumentController(document: Document) : IDocumentController(document) {
     }
 
     fun newStroke() {
-        val stroke = selectedPage?.newStroke((selectedTool.value as TPen).pen.color, (selectedTool.value as TPen).pen.width)
-        if (stroke != null)
+        val stroke = selectedPage?.addStroke((selectedTool.value as TPen).pen.color, (selectedTool.value as TPen).pen.width)
+        if (stroke != null) {
             strokeController.newStroke(stroke)
+            actionQueue.addAction(DrawAction(listOf(stroke), selectedPage!!))
+        }
 
     }
 
@@ -123,10 +128,6 @@ class DocumentController(document: Document) : IDocumentController(document) {
         }
     }
 
-
-
-
-
     fun newPage() {
         val document = state.value.document.value
 
@@ -144,7 +145,13 @@ class DocumentController(document: Document) : IDocumentController(document) {
     }
 
     override fun deleteSelection() {
-        selection.value?.selectedStrokes?.let { selectedPage?.strokes?.removeAll(it) }
+
+        selection.value?.selectedStrokes?.let {
+            if (selectedPage != null)
+                actionQueue.addAction(DeleteAction(it, selectedPage!!))
+
+            selectedPage?.removeStrokes(it)
+        }
         selection.value = null
     }
 
@@ -156,6 +163,30 @@ class DocumentController(document: Document) : IDocumentController(document) {
             newPage()
     }
 
+    override fun redo() {
+
+        when(val action = actionQueue.redo()){
+            is DrawAction -> {
+                action.strokeHolder.addStrokes(action.strokes)
+            }
+            is DeleteAction -> {
+                action.strokeHolder.removeStrokes(action.strokes)
+            }
+        }
+    }
+
+    override fun undo() {
+
+        when(val action = actionQueue.undo()){
+            is DrawAction -> {
+                action.strokeHolder.removeStrokes(action.strokes)
+            }
+            is DeleteAction -> {
+                action.strokeHolder.addStrokes(action.strokes)
+
+            }
+        }
+    }
 
 
 }

@@ -10,7 +10,7 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import util.Point
 
-abstract class IDocumentController(document: Document): Controller {
+abstract class DocumentControllerBase(document: Document): Controller {
     val mouse = MouseInputHandler(this)
     val state = mutableStateOf( DocumentControlState(this, document))
 
@@ -25,9 +25,7 @@ abstract class IDocumentController(document: Document): Controller {
     var selectedTool: MutableState<Tool> = mutableStateOf(Eraser())
     var selectedColor: Color = Color.Red
 
-
-
-
+    val actionQueue = ActionQueue()
 
     fun toolDraggedEnded() {
         when (selectedTool.value) {
@@ -153,4 +151,7 @@ abstract class IDocumentController(document: Document): Controller {
     }
 
     abstract fun onRender()
+
+    abstract fun redo()
+    abstract fun undo()
 }

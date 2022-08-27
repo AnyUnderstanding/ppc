@@ -6,8 +6,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import control.AutoSaveJob
 import control.DocumentController
+import control.DocumentControllerBase
 import java.nio.file.Path
-import kotlin.io.path.pathString
 
 class LoadedDoc(val documentViewControlState: DocumentViewControlState) {
     var workbook: MutableState<DocumentInformation?> = mutableStateOf(null)

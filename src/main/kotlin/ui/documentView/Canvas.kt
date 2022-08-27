@@ -19,6 +19,7 @@ import util.Point
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import kotlin.math.*
 
@@ -59,6 +60,20 @@ fun PPCCanvas(controller: DocumentController) {
                 controller.mouse.mouseWheelScroll(it.changes.first().scrollDelta)
         }.onPointerEvent(PointerEventType.Move) {
             it.changes.first()
+        }.onKeyEvent {
+            println("key down")
+            var retVal = false
+            if (it.isCtrlPressed && it.type == KeyEventType.KeyDown) {
+                if (it.key == Key.Z && !it.isShiftPressed) {
+                    controller.undo()
+                    retVal = true
+                } else if (it.key == Key.Y || it.key == Key.Z && it.isShiftPressed) {
+                    controller.redo()
+                    retVal = true
+                }
+            }
+
+            return@onKeyEvent retVal
         }
     ) {
         if (!isRendered) {
@@ -226,8 +241,8 @@ fun PPCCanvas(controller: DocumentController) {
                             cap = StrokeCap.Round,
                             pathEffect = PathEffect.dashPathEffect(
                                 floatArrayOf(
-                                    10F  * document.zoomFactor,
-                                    10F  * document.zoomFactor
+                                    10F * document.zoomFactor,
+                                    10F * document.zoomFactor
                                 ), 00F
                             )
                         )
@@ -251,7 +266,11 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
             cap = StrokeCap.Round,
         )
     )
-    drawRect(color = THEME.value.pageBackground, topLeft = topLeftPos, size = Size(pageSize.x.toFloat(), pageSize.y.toFloat()))
+    drawRect(
+        color = THEME.value.pageBackground,
+        topLeft = topLeftPos,
+        size = Size(pageSize.x.toFloat(), pageSize.y.toFloat())
+    )
 
 //    drawLine(Color.Black, topLeftPos, topLeftPos + Offset(0, ))
     val p = Path()
@@ -298,7 +317,14 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
                         (topLeftPos.x + verticalDelta * vi).toFloat(),
                         (topLeftPos.y + horizontalDelta * hi).toFloat()
                     )
-                    p.addOval(Rect((topLeftPos.x + verticalDelta * vi).toFloat(),(topLeftPos.y + horizontalDelta * hi).toFloat(),(topLeftPos.x + verticalDelta * vi).toFloat() + dotSize,(topLeftPos.y + horizontalDelta * hi).toFloat() + dotSize))
+                    p.addOval(
+                        Rect(
+                            (topLeftPos.x + verticalDelta * vi).toFloat(),
+                            (topLeftPos.y + horizontalDelta * hi).toFloat(),
+                            (topLeftPos.x + verticalDelta * vi).toFloat() + dotSize,
+                            (topLeftPos.y + horizontalDelta * hi).toFloat() + dotSize
+                        )
+                    )
 
 
                 }
@@ -312,27 +338,28 @@ fun DrawScope.drawPage(page: Page, topLeftPos: Offset, pageSize: Point, document
 
             for (i in 1 until horizontalLines) {
 
-                val posY1L = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
-                val posY2L = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+                val posY1L = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + +horizontalDelta * i
+                val posY2L = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + +horizontalDelta * i
 
                 p.moveTo(topLeftPos.x, (topLeftPos.y + horizontalDelta * i).toFloat())
-                p.lineTo((topLeftPos.x+pageSize.x).toFloat(), posY1L.toFloat())
+                p.lineTo((topLeftPos.x + pageSize.x).toFloat(), posY1L.toFloat())
 
                 p.moveTo(topLeftPos.x, (topLeftPos.y + horizontalDelta * i).toFloat())
-                p.lineTo((topLeftPos.x+pageSize.x).toFloat(), posY2L.toFloat())
+                p.lineTo((topLeftPos.x + pageSize.x).toFloat(), posY2L.toFloat())
 
-                val posY1R = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
-                val posY2R = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + + horizontalDelta * i
+                val posY1R = pageSize.x * (30 * (PI / 180)) + topLeftPos.y + +horizontalDelta * i
+                val posY2R = pageSize.x * (-30 * (PI / 180)) + topLeftPos.y + +horizontalDelta * i
 
-                p.moveTo((topLeftPos.x+pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.moveTo((topLeftPos.x + pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
                 p.lineTo(topLeftPos.x, posY1R.toFloat())
 
-                p.moveTo((topLeftPos.x+pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
+                p.moveTo((topLeftPos.x + pageSize.x).toFloat(), (topLeftPos.y + horizontalDelta * i).toFloat())
                 p.lineTo(topLeftPos.x, posY2R.toFloat())
 
             }
         }
-        PageType.Blanc->{/* Nothing to do */}
+        PageType.Blanc -> {/* Nothing to do */
+        }
 
         else -> {}
 

@@ -7,7 +7,7 @@ import data.Document
 import data.Selection
 import util.Point
 
-class InfiniteDocumentController(document: Document) : IDocumentController(document) {
+class InfiniteDocumentController(document: Document) : DocumentControllerBase(document) {
 
     val chunks: MutableMap<Int, MutableMap<Int, Chunk>> = mutableMapOf()
     val chunkSize = Point(100, 100)
@@ -87,6 +87,14 @@ class InfiniteDocumentController(document: Document) : IDocumentController(docum
     }
 
     override fun onRender() {
+        TODO("Not yet implemented")
+    }
+
+    override fun redo() {
+        TODO("Not yet implemented")
+    }
+
+    override fun undo() {
         TODO("Not yet implemented")
     }
 }

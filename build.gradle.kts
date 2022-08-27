@@ -22,6 +22,8 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-hocon:1.4.0")
+    implementation("org.deeplearning4j:deeplearning4j-core:1.0.0-beta6")
+
 //    implementation("com.charleskorn.kaml:kaml:0.47.0")
 }
 
