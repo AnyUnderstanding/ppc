@@ -4,11 +4,11 @@
 
 # PPC
   
----
+
 <img src="https://img.shields.io/badge/OS-CROSSPLATFORM-13C6FF?style=for-the-badge" alt="cross-platform">
 <img src="https://img.shields.io/github/stars/pixelexplosion/ppc?color=13C6FF&logo=github&logoColor=13C6FF&style=for-the-badge" alt="stars">
 
----
+
 PPC is a simple note-taking application focused on productivity. The app works on Windows, Linux and Mac.
 Note: This project is still work in progress. At this point in time features and file formats might change rapidly.
 <div align="left">
