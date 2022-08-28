@@ -58,9 +58,9 @@ If you're executing PPC for the first time this might take a while getting all t
 
 ❌ PDF import
 
-❌ Multitouch support (not supported by UI-framework)
+❌ Multitouch support (not supported by UI-framework yet)
 
-❌ stylus pressure support (not supported by UI-framework)
+❌ stylus pressure support (not supported by UI-framework yet)
 
 ## Technical Details
 PPC is built in <a href="https://github.com/JetBrains/kotlin">Kotlin</a> using the UI-framework <a href="https://github.com/JetBrains/compose-jb">Compose for Desktop</a>. PPC is rendering on Compose for Desktop's builtin canvas, which internally uses the fast rendering engine <a href="https://github.com/google/skia">skia</a>.
