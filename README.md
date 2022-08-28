@@ -3,6 +3,8 @@
 <img src="https://raw.githubusercontent.com/pixelexplosion/ppc/main/logo/ppc-logo.svg" width="350px"  alt="ppc-logo"/>
 
 # PPC
+  
+---
 <img src="https://img.shields.io/badge/OS-CROSSPLATFORM-13C6FF?style=for-the-badge" alt="cross-platform">
 <img src="https://img.shields.io/github/stars/pixelexplosion/ppc?color=13C6FF&logo=github&logoColor=13C6FF&style=for-the-badge" alt="stars">
 
@@ -22,7 +24,7 @@ If you're executing PPC for the first time this might take a while getting all t
 🪛 Work in Progress •
 ❌ Not supported yet
 
-------
+---
 
 ✔️ Basic drawing
 
@@ -44,11 +46,11 @@ If you're executing PPC for the first time this might take a while getting all t
 
 🪛 Page types
 
-🪛 custom pens
+🪛 Custom pens
 
-🪛 infinite canvas
+🪛 Infinite canvas
 
-🪛 shape recognition
+🪛 Shape recognition
 
 🪛 Themes
 
@@ -60,7 +62,7 @@ If you're executing PPC for the first time this might take a while getting all t
 
 ❌ Multitouch support (not supported by UI-framework yet)
 
-❌ stylus pressure support (not supported by UI-framework yet)
+❌ Stylus pressure support (not supported by UI-framework yet)
 
 ## Technical Details
 PPC is built in <a href="https://github.com/JetBrains/kotlin">Kotlin</a> using the UI-framework <a href="https://github.com/JetBrains/compose-jb">Compose for Desktop</a>. PPC is rendering on Compose for Desktop's builtin canvas, which internally uses the fast rendering engine <a href="https://github.com/google/skia">skia</a>.
