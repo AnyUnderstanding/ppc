@@ -8,7 +8,7 @@
 
 ---
 PPC is a simple note-taking application focused on productivity. The app works on Windows, Linux and Mac.
-Note: This Project is still work in progress. At this point in time features and file formats might change rapidly.
+Note: This project is still work in progress. At this point in time features and file formats might change rapidly.
 <div align="left">
 
 ## Getting Started
