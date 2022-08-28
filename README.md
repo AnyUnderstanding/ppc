@@ -68,12 +68,10 @@ PPC uses for most of the part MVC as its software architecture.
 For Stroke smoothing points are sampled from the users input and a <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline">Catmull-Rom splines</a> is fitted through them.
 
 ## Contributors
-
-
-<a href="https://github.com/larsvommars"  >
+<a href="https://github.com/larsvommars">
 LarsVomMars
-</a>,
-<a href="github.com/pixelexplosion">
+</a>and<a href="github.com/pixelexplosion">
 Pixelexplosion
 </a>
+
 
