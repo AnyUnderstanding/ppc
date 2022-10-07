@@ -4,13 +4,13 @@ import ApplicationState
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
-import data.DocumentInformation
 
 class PPCWindowState(
     val application: ApplicationState,
     private val exit: (PPCWindowState) -> Unit,
 ) {
     val window = WindowState(placement = WindowPlacement.Floating)
+    val title = mutableStateOf("PPC")
 
     suspend fun exit(): Boolean {
         exit(this)
@@ -20,6 +20,4 @@ class PPCWindowState(
     fun newWindow() {
         application.newWindow()
     }
-
-
 }

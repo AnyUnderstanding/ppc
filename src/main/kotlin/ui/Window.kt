@@ -2,9 +2,7 @@
 
 package ui
 
-
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.window.*
@@ -31,10 +29,9 @@ fun <T : WindowControlState> PPCWindow(
     val scope = rememberCoroutineScope()
     fun exit() = scope.launch { windowState.exit() }
 
-
     Window(
         state = windowState.window,
-        title = "PPC",
+        title = windowState.title.value,
         onCloseRequest = {
             controlState.finalize()
             exit()
@@ -42,18 +39,16 @@ fun <T : WindowControlState> PPCWindow(
         alwaysOnTop = true,
         onKeyEvent = {
             var retVal = false
-//            println("keyyy $controlState")
             if (controlState is DocumentViewControlState) {
                 if (it.isCtrlPressed && it.type == KeyEventType.KeyDown) {
                     if (it.key == Key.Z && !it.isShiftPressed) {
-                        println("key down: undo")
-
                         controlState.documentController.value.undo()
                         retVal = true
                     } else if (it.key == Key.Y || it.key == Key.Z && it.isShiftPressed) {
-                        println("key down")
-
                         controlState.documentController.value.redo()
+                        retVal = true
+                    } else if (it.key == Key.S) {
+                        controlState.saveDocument()
                         retVal = true
                     }
                 }

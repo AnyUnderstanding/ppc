@@ -10,9 +10,9 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import util.Point
 
-abstract class DocumentControllerBase(document: Document): Controller {
+abstract class DocumentControllerBase(document: Document) : Controller {
     val mouse = MouseInputHandler(this)
-    val state = mutableStateOf( DocumentControlState(this, document))
+    val state = mutableStateOf(DocumentControlState(this, document))
 
     val strokeController = StrokeController()
     private var canvasSize = Point(0, 0)
@@ -32,11 +32,11 @@ abstract class DocumentControllerBase(document: Document): Controller {
             is Selector -> {
                 if (selection.value != null && !selection.value!!.isEmpty())
                     selection.value?.selectionComplete?.value = true
-
                 else
                     selection.value = null
             }
-            is TPen ->  strokeController.endStroke()
+
+            is TPen -> strokeController.endStroke()
 
             else -> {}
 
@@ -59,9 +59,11 @@ abstract class DocumentControllerBase(document: Document): Controller {
     fun toolDown(mousePos: Point) {
         when (selectedTool.value) {
             is Selector -> {
-                if (selection.value?.selectionComplete?.value!!)
+//                if (selection.value?.selectionComplete?.value!!) // NOTE: crashes application when selection starts over the toolbar canvas
+                if (selection.value?.selectionComplete?.value == true)
                     selection.value = null
             }
+
             is TPen -> penDown(mousePos)
 
             else -> {}
@@ -71,6 +73,7 @@ abstract class DocumentControllerBase(document: Document): Controller {
     fun toolClicked() {
 
     }
+
     abstract fun penDown(mousePos: Point)
 
     abstract fun selectorMoved(globalPoint: Point)
@@ -84,9 +87,6 @@ abstract class DocumentControllerBase(document: Document): Controller {
     abstract fun newStroke(start: Point)
 
 
-
-
-
     fun resize(newXDim: Int, newYDim: Int, localCenter: Point) {
         canvasSize = Point(newXDim, newYDim)
         this.localCenter = localCenter
@@ -96,15 +96,11 @@ abstract class DocumentControllerBase(document: Document): Controller {
         if (state.value.document.value.scrollY + scrollDelta < 0) return
         state.value.document.value.centerPoint.value += Point(0, scrollDelta.toDouble())
         state.value.document.value.scrollY += scrollDelta
-        println(state.value.document.value.centerPoint.value)
-
     }
 
     fun scrollX(scrollDelta: Float) {
-        println("X: $scrollDelta")
         state.value.document.value.centerPoint.value += Point(scrollDelta.toDouble(), 0)
         state.value.document.value.scrollX += scrollDelta
-
     }
 
 

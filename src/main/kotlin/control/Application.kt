@@ -12,11 +12,9 @@ import ui.documentView.DocumentView
 
 @Composable
 fun ApplicationScope.PPCApplication(state: ApplicationState) {
-
     for (window in state.windows) {
         key(window) {
             val documentViewControlState = remember { DocumentViewControlState(DocumentController(Document(PageSize.A4)), state) }
-
             PPCWindow(window, documentViewControlState, DocumentView)
         }
     }
