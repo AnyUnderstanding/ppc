@@ -72,8 +72,8 @@ For Stroke smoothing points are sampled from the users input and a <a href="http
 ## Contributors
 <a href="https://github.com/larsvommars">
 LarsVomMars
-</a>and<a href="github.com/pixelexplosion">
-Pixelexplosion
+</a>and<a href="github.com/AnyUnderstanding">
+AnyUnderstanding
 </a>
 
 
