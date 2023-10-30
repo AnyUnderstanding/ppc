@@ -67,7 +67,7 @@ If you're executing PPC for the first time this might take a while getting all t
 ## Technical Details
 PPC is built in <a href="https://github.com/JetBrains/kotlin">Kotlin</a> using the UI-framework <a href="https://github.com/JetBrains/compose-jb">Compose for Desktop</a>. PPC is rendering on Compose for Desktop's builtin canvas, which internally uses the fast rendering engine <a href="https://github.com/google/skia">skia</a>.
 PPC uses for most of the part MVC as its software architecture.
-For Stroke smoothing points are sampled from the users input and a <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline">Catmull-Rom splines</a> is fitted through them.
+For stroke smoothing, points are sampled from the userinput and a <a href="https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline">Catmull-Rom splines</a> is fitted through them.
 
 ## Contributors
 <a href="https://github.com/larsvommars">
