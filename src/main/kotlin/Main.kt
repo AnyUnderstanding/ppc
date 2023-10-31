@@ -11,11 +11,9 @@ import data.Settings
 // todo: proposed solutions:
 // todo: stroke has an global offset for the starting point afterwards only the between the points can be stored by using smaller datatypes like bytes
 fun main() = application {
-      PPCApplication(rememberApplicationState())
-//    val a = 1.0
-//    // override fun contains(value: T): Boolean = lessThanOrEquals(start, value) && lessThanOrEquals(value, endInclusive)
-//    print(a in -1.0..3.0)
-
+    PPCApplication(rememberApplicationState())
+//    val state = ApplicationState()
+//    state.loadDocumentInformation()
 }
 
 

@@ -5,7 +5,6 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import ui.*
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -20,10 +19,8 @@ class ApplicationState {
     val settings = Settings()
     val pens = mutableStateListOf<Pen>(Pen(Color(0xA00000FF), 2f), Pen(Color.Blue, 1f))
 
-//    val theme = mutableStateOf(LightMode())
-
     init {
-        THEME.value = if (settings.darkmode) DarkMode() else LightMode()
+        THEME.value = settings.theme
     }
 
     private val _windows = mutableStateListOf<PPCWindowState>()
@@ -36,87 +33,69 @@ class ApplicationState {
         )
     }
 
-    fun loadDocument(docInfo: DocumentInformation): Document? {
-        return loadDocument(Path.of(docInfo.path))
-    }
+//    fun loadDocument(docInfo: DocumentInformation): Document? {
+//        return loadDocument(docInfo.path)
+//    }
 
 
     fun loadDocument(docPath: Path): Document? {
-        return try {
-            val file = docPath.readBytes()
-            Cbor.decodeFromByteArray<Document>(file)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        runCatching {
+            return Cbor.decodeFromByteArray<Document>(docPath.readBytes())
         }
+        return null
     }
 
 
     fun loadDocumentInformation(
-        path: String = workingDirectoryPath.pathString,
-        depth: Int = 3,
-        loadedDoc: LoadedDoc
-    ): List<DocumentInformation> {
-        val folders = mutableListOf<DocumentInformation>()
-        File(path).listFiles()?.forEach {
-            if (it.isDirectory) {
-                folders.add(
-                    DocumentInformation(
-                        it.name,
-                        DocumentInformationType.Folder,
-                        it.path
+        path: Path = workingDirectoryPath,
+        prefix: String = "",
+        loadedDoc: LoadedDoc? = null
+    ): DirectoryInformation {
+        val document = DirectoryInformation(path.name, path, prefix)
+
+        path.listDirectoryEntries().forEach {
+            if (it.isDirectory()) {
+                document.directories.add(loadDocumentInformation(it, "$prefix/${it.name}"))
+            } else if (it.extension == "ppc") {
+                document.files.add(
+                    FileInformation(
+                        it.nameWithoutExtension,
+                        it,
+                        "$prefix/${it.name}",
+                        document, // backwards reference
+                        it.fileSize()
                     )
                 )
             }
         }
 
-        addChildrenToFolder(folders, depth - 1)
+        if (loadedDoc != null) updateLoadedDoc(document, loadedDoc)
 
-        updateLoadedDoc(folders, loadedDoc)
-        return folders
+        return document
     }
 
-    fun addChildrenToFolder(folders: List<DocumentInformation>, remainingDepth: Int) {
-        folders.forEach {
-            if (it.type == DocumentInformationType.Folder) {
-
-                File(it.path).listFiles()?.forEach { file ->
-                    if (file.isFile && file.name.endsWith(".ppc")) {
-                        it.children.add(
-                            DocumentInformation(
-                                file.name.substringBefore('.'),
-                                DocumentInformationType.Document,
-                                file.path
-                            )
-                        )
-                    } else if (file.isDirectory) {
-                        it.children.add(DocumentInformation(file.name, DocumentInformationType.Folder, file.path))
-                    }
-                }
-                if (remainingDepth > 0) addChildrenToFolder(it.children, remainingDepth - 1)
-            }
-        }
+    // TODO: Rework - cache latest opened
+    private fun updateLoadedDoc(document: DirectoryInformation, loadedDoc: LoadedDoc) {
+        loadedDoc.parent.value = document
+//        loadedDoc.workbook.value = document.directories.firstOrNull()
+//        loadedDoc.workbook.value = folders.firstOrNull {
+//            it.path == loadedDoc.workbook.value?.path
+//        }
+//        loadedDoc.folder.value = loadedDoc.workbook.value?.children?.firstOrNull {
+//            it.path == loadedDoc.folder.value?.path
+//        }
     }
 
-    private fun updateLoadedDoc(folders: List<DocumentInformation>, loadedDoc: LoadedDoc) {
-        loadedDoc.workbook.value = folders.firstOrNull {
-            it.path == loadedDoc.workbook.value?.path
-        }
-        loadedDoc.folder.value = loadedDoc.workbook.value?.children?.firstOrNull {
-            it.path == loadedDoc.folder.value?.path
-        }
-
-    }
-
-    fun newFolder(doc: DocumentInformation?, name: String) {
-        val parentPath = doc?.path ?: workingDirectoryPath.pathString
+    fun newFolder(path: Path): Boolean {
         runCatching {
-            Path(parentPath, name).createDirectory()
+            path.createDirectories()
+            return true
         }
+        return false
     }
 
-    fun newFile(doc: DocumentInformation?, name: String) {
-        val parentPath = doc?.path ?: workingDirectoryPath.pathString
+    fun newFile(doc: FileInformation?, name: String) {
+        val parentPath = doc?.path ?: workingDirectoryPath
         runCatching {
             Path(parentPath, "$name.ppc").createFile()
         }
@@ -144,3 +123,4 @@ class ApplicationState {
 }
 
 
+fun Path(path: Path, varargs: String): Path = Path(path.pathString, varargs)

@@ -3,7 +3,7 @@ package ui
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 
-val THEME = mutableStateOf<Theme>(LightMode())
+val THEME = mutableStateOf<Theme>(LightTheme())
 
 open class Theme {
     open val background: Color = Color(0xFFF8FCFF)
@@ -19,14 +19,13 @@ open class Theme {
     open val dividerColor: Color = Color(0xFFD8D8D8)
     open val textFieldColor: Color = Color(0xFFCCCCCC)
     open val menuBody: Color = Color.White
+}
+
+class LightTheme : Theme() {
 
 }
 
-class LightMode : Theme() {
-
-}
-
-class DarkMode : Theme() {
+class DarkTheme : Theme() {
     override val background = Color(0xFF575757)
     override val pageForeground: Color = Color.White
     override val pageBackground: Color = Color(0xFF363636)
@@ -37,8 +36,9 @@ class DarkMode : Theme() {
     override val iconColor: Color = Color(0xFFF2F2F2)
     override val highlightColor: Color = Color(0xFF1347FF)
     override val selectorColor: Color = Color(0xFFF2F2F2)
+}
 
-
-
-
+enum class THEMES(val theme: Theme) {
+    LightTheme(LightTheme()),
+    DarkTheme(DarkTheme());
 }
